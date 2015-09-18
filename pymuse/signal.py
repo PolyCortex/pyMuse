@@ -34,3 +34,23 @@ class MuseSignal(object):
         del self.r_ear[0]
         if self.do_fft:
             self.r_ear_fft = fft.fft(self.r_ear)
+
+
+class MuseConcentration(object):
+    def __init__(self, length=200):
+        self.length = length
+        self.concentration = [0.0] * self.length
+
+    def add_concentration(self, s):
+        self.concentration.append(s)
+        del self.concentration[0]
+
+
+class MuseMellow(object):
+    def __init__(self, length=200):
+        self.length = length
+        self.mellow = [0.0] * self.length
+
+    def add_mellow(self, s):
+        self.mellow.append(s)
+        del self.mellow[0]
