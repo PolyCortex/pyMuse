@@ -20,13 +20,13 @@ def main():
     viewers['eeg'] = viewer_eeg
 
     # Concentration and Mellow
-    signal_concentration = MuseConcentration(length=400)
-    signal_mellow = MuseMellow(length=400)
-    viewer_concentration_mellow = MuseViewerConcentrationMellow(signal_concentration, signal_mellow, signal_boundaries=[-0.1, 1.1])
+    #signal_concentration = MuseConcentration(length=400)
+    #signal_mellow = MuseMellow(length=400)
+    #viewer_concentration_mellow = MuseViewerConcentrationMellow(signal_concentration, signal_mellow, signal_boundaries=[-0.1, 1.1])
 
-    signals['concentration'] = signal_concentration
-    signals['mellow'] = signal_mellow
-    viewers['concentration-mellow'] = viewer_concentration_mellow
+    #signals['concentration'] = signal_concentration
+    #signals['mellow'] = signal_mellow
+    #viewers['concentration-mellow'] = viewer_concentration_mellow
 
     # Initializing the server
     try:

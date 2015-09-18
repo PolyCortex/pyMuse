@@ -1,18 +1,24 @@
 __author__ = 'benjamindeleener'
 import matplotlib.pyplot as plt
 from datetime import datetime
+from numpy import linspace
 
-class MuseViewerSignal(object):
-    def __init__(self, signal, signal_boundaries=None):
+class MuseViewer(object):
+    def __init__(self, acquisition_freq, signal_boundaries=None):
         self.refresh_freq = 0.15
+        self.acquisition_freq = acquisition_freq
+        self.init_time = datetime.now()
         self.last_refresh = datetime.now()
-        self.signal = signal
         if signal_boundaries is not None:
             self.low, self.high = signal_boundaries[0], signal_boundaries[1]
         else:
             self.low, self.high = 600, 1200
 
-        self.x_data = range(0, self.signal.length, 1)
+class MuseViewerSignal(MuseViewer):
+    def __init__(self, signal, acquisition_freq, signal_boundaries=None):
+        super(MuseViewerSignal, self).__init__(acquisition_freq, signal_boundaries)
+        self.signal = signal
+
         self.figure, (self.ax1, self.ax2, self.ax3, self.ax4) = plt.subplots(4, 1, sharex=True, figsize=(15, 10))
         self.ax1.set_title('Left ear')
         self.ax2.set_title('Left forehead')
@@ -30,10 +36,10 @@ class MuseViewerSignal(object):
             self.ax3.set_ylim([0, 10000])
             self.ax4.set_ylim([0, 10000])
         else:
-            self.ax1_plot, = self.ax1.plot(self.x_data, self.signal.l_ear)
-            self.ax2_plot, = self.ax2.plot(self.x_data, self.signal.l_forehead)
-            self.ax3_plot, = self.ax3.plot(self.x_data, self.signal.r_forehead)
-            self.ax4_plot, = self.ax4.plot(self.x_data, self.signal.r_ear)
+            self.ax1_plot, = self.ax1.plot(self.signal.time, self.signal.l_ear)
+            self.ax2_plot, = self.ax2.plot(self.signal.time, self.signal.l_forehead)
+            self.ax3_plot, = self.ax3.plot(self.signal.time, self.signal.r_forehead)
+            self.ax4_plot, = self.ax4.plot(self.signal.time, self.signal.r_ear)
 
             self.ax1.set_ylim([self.low, self.high])
             self.ax2.set_ylim([self.low, self.high])
@@ -60,6 +66,10 @@ class MuseViewerSignal(object):
             self.ax3_plot.set_ydata(self.signal.r_forehead_fft[0:len(self.x_data)/2])
             self.ax4_plot.set_ydata(self.signal.r_ear_fft[0:len(self.x_data)/2])
         else:
+            self.ax1_plot.set_xdata(self.signal.time)
+            self.ax2_plot.set_xdata(self.signal.time)
+            self.ax3_plot.set_xdata(self.signal.time)
+            self.ax4_plot.set_xdata(self.signal.time)
             self.ax1_plot.set_ydata(self.signal.l_ear)
             self.ax2_plot.set_ydata(self.signal.l_forehead)
             self.ax3_plot.set_ydata(self.signal.r_forehead)
@@ -72,6 +82,7 @@ class MuseViewerSignal(object):
 class MuseViewerConcentrationMellow(object):
     def __init__(self, signal_concentration, signal_mellow, signal_boundaries=None):
         self.refresh_freq = 0.01
+        self.init_time = 0.0
         self.last_refresh = datetime.now()
         self.signal_concentration = signal_concentration
         self.signal_mellow = signal_mellow

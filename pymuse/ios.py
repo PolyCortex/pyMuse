@@ -24,6 +24,7 @@ class MuseServer(ServerThread):
             self.signal['eeg'].add_l_forehead(args[1])
             self.signal['eeg'].add_r_forehead(args[2])
             self.signal['eeg'].add_r_ear(args[3])
+            self.signal['eeg'].add_time()
             self.viewer['eeg'].refresh()
 
     # receive alpha relative data
@@ -34,6 +35,7 @@ class MuseServer(ServerThread):
             self.signal['alpha_rel'].add_l_forehead(args[1])
             self.signal['alpha_rel'].add_r_forehead(args[2])
             self.signal['alpha_rel'].add_r_ear(args[3])
+            self.signal['alpha_rel'].add_time()
             self.viewer['alpha_rel'].refresh()
 
     # receive alpha relative data
