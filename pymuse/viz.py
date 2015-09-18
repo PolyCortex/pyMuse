@@ -44,6 +44,7 @@ class MuseViewerSignal(object):
 
     def show(self):
         plt.show(block=False)
+        self.refresh()
 
     def refresh(self):
         time_now = datetime.now()
@@ -96,6 +97,7 @@ class MuseViewerConcentrationMellow(object):
 
     def show(self):
         plt.show(block=False)
+        self.refresh()
 
     def refresh(self):
         time_now = datetime.now()
