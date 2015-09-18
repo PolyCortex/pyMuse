@@ -9,8 +9,8 @@ from liblo import ServerError
 
 
 def main():
-    signal = MuseSignal(length=2000, do_fft=False)
-    viewer = MuseViewer(signal, signal_boundaries=[600, 1200])
+    signal = MuseSignal(length=500, do_fft=False)
+    viewer = MuseViewer(signal, signal_boundaries=[0, 1])  # [600, 1200]
 
     try:
         server = MuseServer(signal, viewer)
@@ -21,8 +21,8 @@ def main():
     viewer.show()
 
     server.start()
+    while 1:
+        time.sleep(0.01)
 
 if __name__ == "__main__":
     main()
-    while 1:
-        time.sleep(0.01)

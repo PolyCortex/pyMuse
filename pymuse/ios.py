@@ -17,13 +17,39 @@ class MuseServer(ServerThread):
         # print "%s %f %f %f" % (path, acc_x, acc_y, acc_z)
 
     # receive EEG data
-    @make_method('/muse/eeg', 'ffff')
-    def eeg_callback(self, path, args):
+    #@make_method('/muse/eeg', 'ffff')
+    #def eeg_callback(self, path, args):
+        #self.signal.add_l_ear(args[0])
+        #self.signal.add_l_forehead(args[1])
+        #self.signal.add_r_forehead(args[2])
+        #self.signal.add_r_ear(args[3])
+
+        #self.viewer.refresh()
+
+    # receive alpha relative data
+    #@make_method('/muse/elements/alpha_relative', 'ffff')
+    #def alpha_callback(self, path, args):
+        #print args
+        #self.signal.add_l_ear(args[0])
+        #self.signal.add_l_forehead(args[1])
+        #self.signal.add_r_forehead(args[2])
+        #self.signal.add_r_ear(args[3])
+
+        #self.viewer.refresh()
+
+    # receive alpha relative data
+    @make_method('/muse/elements/experimental/concentration', 'f')
+    def concentration_callback(self, path, args):
+        # print args
         self.signal.add_l_ear(args[0])
-        self.signal.add_l_forehead(args[1])
-        self.signal.add_r_forehead(args[2])
-        self.signal.add_r_ear(args[3])
-        print args
+
+        self.viewer.refresh()
+
+    # receive alpha relative data
+    @make_method('/muse/elements/experimental/mellow', 'f')
+    def mellow_callback(self, path, args):
+        # print args
+        self.signal.add_l_forehead(args[0])
 
         self.viewer.refresh()
 
