@@ -2,7 +2,7 @@ __author__ = 'benjamindeleener'
 
 import sys
 import time
-from pymuse.io import MuseServer
+from pymuse.ios import MuseServer
 from pymuse.viz import MuseViewer
 from pymuse.signal import MuseSignal
 from liblo import ServerError
