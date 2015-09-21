@@ -1,7 +1,14 @@
 __author__ = 'benjamindeleener'
 import matplotlib.pyplot as plt
-from datetime import datetime
+import matplotlib.ticker as mticker
+from datetime import datetime, timedelta
 from numpy import linspace
+
+
+def timeTicks(x, pos):
+    d = timedelta(milliseconds=x)
+    return str(d)
+
 
 class MuseViewer(object):
     def __init__(self, acquisition_freq, signal_boundaries=None):
@@ -9,10 +16,11 @@ class MuseViewer(object):
         self.acquisition_freq = acquisition_freq
         self.init_time = datetime.now()
         self.last_refresh = datetime.now()
+
         if signal_boundaries is not None:
             self.low, self.high = signal_boundaries[0], signal_boundaries[1]
         else:
-            self.low, self.high = 600, 1200
+            self.low, self.high = 0, 1
 
 class MuseViewerSignal(MuseViewer):
     def __init__(self, signal, acquisition_freq, signal_boundaries=None):
@@ -46,6 +54,12 @@ class MuseViewerSignal(MuseViewer):
             self.ax3.set_ylim([self.low, self.high])
             self.ax4.set_ylim([self.low, self.high])
 
+            formatter = mticker.FuncFormatter(timeTicks)
+            self.ax1.xaxis.set_major_formatter(formatter)
+            self.ax2.xaxis.set_major_formatter(formatter)
+            self.ax3.xaxis.set_major_formatter(formatter)
+            self.ax4.xaxis.set_major_formatter(formatter)
+
         plt.ion()
 
     def show(self):
@@ -66,14 +80,18 @@ class MuseViewerSignal(MuseViewer):
             self.ax3_plot.set_ydata(self.signal.r_forehead_fft[0:len(self.x_data)/2])
             self.ax4_plot.set_ydata(self.signal.r_ear_fft[0:len(self.x_data)/2])
         else:
-            self.ax1_plot.set_xdata(self.signal.time)
-            self.ax2_plot.set_xdata(self.signal.time)
-            self.ax3_plot.set_xdata(self.signal.time)
-            self.ax4_plot.set_xdata(self.signal.time)
             self.ax1_plot.set_ydata(self.signal.l_ear)
             self.ax2_plot.set_ydata(self.signal.l_forehead)
             self.ax3_plot.set_ydata(self.signal.r_forehead)
             self.ax4_plot.set_ydata(self.signal.r_ear)
+
+            times = list(linspace(self.signal.time[0], self.signal.time[-1], self.signal.length))
+            self.ax1_plot.set_xdata(times)
+            self.ax2_plot.set_xdata(times)
+            self.ax3_plot.set_xdata(times)
+            self.ax4_plot.set_xdata(times)
+
+            plt.xlim(self.signal.time[0], self.signal.time[-1])
 
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
@@ -81,7 +99,7 @@ class MuseViewerSignal(MuseViewer):
 
 class MuseViewerConcentrationMellow(object):
     def __init__(self, signal_concentration, signal_mellow, signal_boundaries=None):
-        self.refresh_freq = 0.01
+        self.refresh_freq = 0.05
         self.init_time = 0.0
         self.last_refresh = datetime.now()
         self.signal_concentration = signal_concentration
@@ -104,6 +122,10 @@ class MuseViewerConcentrationMellow(object):
         self.ax1.set_ylim([self.low, self.high])
         self.ax2.set_ylim([self.low, self.high])
 
+        formatter = mticker.FuncFormatter(timeTicks)
+        self.ax1.xaxis.set_major_formatter(formatter)
+        self.ax2.xaxis.set_major_formatter(formatter)
+
         plt.ion()
 
     def show(self):
@@ -120,6 +142,12 @@ class MuseViewerConcentrationMellow(object):
 
         self.ax1_plot.set_ydata(self.signal_concentration.concentration)
         self.ax2_plot.set_ydata(self.signal_mellow.mellow)
+
+        times = list(linspace(self.signal_concentration.time[0], self.signal_concentration.time[-1], self.signal_concentration.length))
+        self.ax1_plot.set_xdata(times)
+        self.ax2_plot.set_xdata(times)
+
+        plt.xlim(self.signal_concentration.time[0], self.signal_concentration.time[-1])
 
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
