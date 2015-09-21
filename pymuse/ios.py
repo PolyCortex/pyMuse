@@ -20,6 +20,7 @@ class MuseServer(ServerThread):
     @make_method('/muse/eeg', 'ffff')
     def eeg_callback(self, path, args):
         if 'eeg' in self.signal:
+            self.signal['eeg'].add_time()
             self.signal['eeg'].add_l_ear(args[0])
             self.signal['eeg'].add_l_forehead(args[1])
             self.signal['eeg'].add_r_forehead(args[2])
@@ -30,6 +31,7 @@ class MuseServer(ServerThread):
     @make_method('/muse/elements/alpha_relative', 'ffff')
     def alpha_callback(self, path, args):
         if 'alpha_rel' in self.signal:
+            self.signal['alpha_rel'].add_time()
             self.signal['alpha_rel'].add_l_ear(args[0])
             self.signal['alpha_rel'].add_l_forehead(args[1])
             self.signal['alpha_rel'].add_r_forehead(args[2])
@@ -40,6 +42,7 @@ class MuseServer(ServerThread):
     @make_method('/muse/elements/experimental/concentration', 'f')
     def concentration_callback(self, path, args):
         if 'concentration' in self.signal:
+            self.signal['concentration'].add_time()
             self.signal['concentration'].add_concentration(args[0])
             self.viewer['concentration-mellow'].refresh()
 
@@ -47,6 +50,7 @@ class MuseServer(ServerThread):
     @make_method('/muse/elements/experimental/mellow', 'f')
     def mellow_callback(self, path, args):
         if 'mellow' in self.signal:
+            self.signal['mellow'].add_time()
             self.signal['mellow'].add_mellow(args[0])
             self.viewer['concentration-mellow'].refresh()
 

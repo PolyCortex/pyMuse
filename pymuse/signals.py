@@ -1,10 +1,23 @@
 __author__ = 'benjamindeleener'
-from numpy import fft
-
+from numpy import fft, linspace
+from datetime import datetime
 
 class MuseSignal(object):
-    def __init__(self, length=200, do_fft=False):
+    def __init__(self, length, acquisition_freq):
         self.length = length
+        self.acquisition_freq = acquisition_freq
+        self.time = list(linspace(-float(self.length) / self.acquisition_freq + 1.0 / self.acquisition_freq, 0.0, self.length))
+        self.init_time = datetime.now()
+
+    def add_time(self):
+        diff = datetime.now() - self.init_time
+        self.time.append(float(diff.total_seconds() * 1000))
+        del self.time[0]
+
+
+class MuseEEG(MuseSignal):
+    def __init__(self, length=200, acquisition_freq=220.0, do_fft=False):
+        super(MuseEEG, self).__init__(length, acquisition_freq)
         self.do_fft = do_fft
         self.l_ear, self.l_forehead, self.r_forehead, self.r_ear = [0.0] * self.length, [0.0] * self.length, [
             0.0] * self.length, [0.0] * self.length
@@ -36,9 +49,9 @@ class MuseSignal(object):
             self.r_ear_fft = fft.fft(self.r_ear)
 
 
-class MuseConcentration(object):
-    def __init__(self, length=200):
-        self.length = length
+class MuseConcentration(MuseSignal):
+    def __init__(self, length=200, acquisition_freq=10.0):
+        super(MuseConcentration, self).__init__(length, acquisition_freq)
         self.concentration = [0.0] * self.length
 
     def add_concentration(self, s):
@@ -46,9 +59,9 @@ class MuseConcentration(object):
         del self.concentration[0]
 
 
-class MuseMellow(object):
-    def __init__(self, length=200):
-        self.length = length
+class MuseMellow(MuseSignal):
+    def __init__(self, length=200, acquisition_freq=10.0):
+        super(MuseMellow, self).__init__(length, acquisition_freq)
         self.mellow = [0.0] * self.length
 
     def add_mellow(self, s):
