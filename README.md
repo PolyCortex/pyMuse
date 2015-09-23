@@ -37,3 +37,4 @@ See the [developer webpage](http://www.choosemuse.com/developer-kit/) for detail
   ```
   muse-player -f you_recorded_data.muse -s osc.udp://localhost:5001
   ```
+Note that you can add your recorded data to the following [repository](https://github.com/PolyCortex/MuseData) to share it with the other members.
