@@ -13,6 +13,7 @@ You will need some tools to get started with Muse headset and pyMuse:
 Don't hesitate to go on [Muse Developer website](https://sites.google.com/a/interaxon.ca/muse-developer-site/home) to get information.
 
 ## Getting started
+### Display your Muse data with eeg displayer
 1. Connect your Muse headset with your computer by bluetooth
 2. Start MuseIO (in a terminal):
   ```
@@ -22,7 +23,8 @@ Don't hesitate to go on [Muse Developer website](https://sites.google.com/a/inte
   ```
   python eeg_display.py
   ```
-## Save Muse data and stream offline
+
+### Save Muse data and stream offline
 
 See the [developer webpage](http://www.choosemuse.com/developer-kit/) for details.
 
@@ -38,3 +40,4 @@ See the [developer webpage](http://www.choosemuse.com/developer-kit/) for detail
   muse-player -f you_recorded_data.muse -s osc.udp://localhost:5001
   ```
 Note that you can add your recorded data to the following [repository](https://github.com/PolyCortex/MuseData) to share it with the other members.
+6. Now you can display your recorded session using eeg displayer, or processing with your favorite software.
