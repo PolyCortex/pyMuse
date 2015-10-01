@@ -4,6 +4,7 @@ from kivy.properties import NumericProperty, ReferenceListProperty,\
     ObjectProperty
 from kivy.vector import Vector
 from kivy.clock import Clock
+from kivy.core.window import Window
 
 
 class PongPaddle(Widget):
@@ -32,6 +33,15 @@ class PongGame(Widget):
     player1 = ObjectProperty(None)
     player2 = ObjectProperty(None)
 
+    def __init__(self, **kwargs):
+        super(PongGame, self).__init__(**kwargs)
+        self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+        self._keyboard.bind(on_key_down=self._on_keyboard_down)
+
+    def _keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+        self._keyboard = None
+
     def serve_ball(self, vel=(4, 0)):
         self.ball.center = self.center
         self.ball.velocity = vel
@@ -55,11 +65,28 @@ class PongGame(Widget):
             self.player1.score += 1
             self.serve_ball(vel=(-4, 0))
 
-    def on_touch_move(self, touch):
-        if touch.x < self.width / 3:
-            self.player1.center_y = touch.y
-        if touch.x > self.width - self.width / 3:
-            self.player2.center_y = touch.y
+    # def on_touch_move(self, touch):
+    #     if touch.x < self.width / 3:
+    #         self.player1.center_y = touch.y
+    #     if touch.x > self.width - self.width / 3:
+    #         self.player2.center_y = touch.y
+
+    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        if keycode[1] == 'w':
+            self.player1.center_y += 10
+        elif keycode[1] == 's':
+            self.player1.center_y -= 10
+        elif keycode[1] == 'up':
+            self.player2.center_y += 10
+        elif keycode[1] == 'down':
+            self.player2.center_y -= 10
+        elif keycode[1] == 'escape':
+            # need to press 2X on escape to quit
+            # 1st time stop the game
+            # 2nd time quit the app
+            keyboard.release()
+            self.ball.velocity = (0, 0)
+        return True
 
 
 class PongApp(App):
