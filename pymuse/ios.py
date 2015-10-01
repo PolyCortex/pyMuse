@@ -4,11 +4,11 @@ from liblo import *
 
 class MuseServer(ServerThread):
     # listen for messages on port 5001
-    def __init__(self, signal, viewer):
+    def __init__(self, port, signal, viewer):
         self.signal = signal
         self.viewer = viewer
 
-        ServerThread.__init__(self, 5001)
+        ServerThread.__init__(self, port)
 
     # receive accelrometer data
     @make_method('/muse/acc', 'fff')
@@ -20,6 +20,7 @@ class MuseServer(ServerThread):
     @make_method('/muse/eeg', 'ffff')
     def eeg_callback(self, path, args):
         if 'eeg' in self.signal:
+            #print self.port, args
             self.signal['eeg'].add_time()
             self.signal['eeg'].add_l_ear(args[0])
             self.signal['eeg'].add_l_forehead(args[1])

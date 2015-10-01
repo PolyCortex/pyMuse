@@ -12,7 +12,7 @@ def timeTicks(x, pos):
 
 class MuseViewer(object):
     def __init__(self, acquisition_freq, signal_boundaries=None):
-        self.refresh_freq = 0.15
+        self.refresh_freq = 0.4  # default=0.15
         self.acquisition_freq = acquisition_freq
         self.init_time = datetime.now()
         self.last_refresh = datetime.now()
@@ -91,7 +91,7 @@ class MuseViewerSignal(MuseViewer):
             self.ax3_plot.set_xdata(times)
             self.ax4_plot.set_xdata(times)
 
-            plt.xlim(self.signal.time[0], self.signal.time[-1])
+            self.ax1.set_xlim(self.signal.time[0], self.signal.time[-1])
 
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
