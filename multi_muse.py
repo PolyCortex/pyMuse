@@ -8,29 +8,20 @@ from pymuse.signals import MuseEEG, MuseConcentration, MuseMellow
 from liblo import ServerError
 
 
-def main():
+def run_server(port=5001):
     # initialization of variables
     signals, viewers = dict(), dict()
 
     # EEG signal
-    #signal_eeg = MuseEEG(length=2000, acquisition_freq=220.0, do_fft=False)
-    #viewer_eeg = MuseViewerSignal(signal_eeg, 220.0, signal_boundaries=[600, 1200])
+    signal_eeg = MuseEEG(length=2000, acquisition_freq=220.0, do_fft=False)
+    viewer_eeg = MuseViewerSignal(signal_eeg, 220.0, signal_boundaries=[600, 1200])
 
-    #signals['eeg'] = signal_eeg
-    #viewers['eeg'] = viewer_eeg
-
-    # Concentration and Mellow
-    signal_concentration = MuseConcentration(length=400, acquisition_freq=10.0)
-    signal_mellow = MuseMellow(length=400, acquisition_freq=10.0)
-    viewer_concentration_mellow = MuseViewerConcentrationMellow(signal_concentration, signal_mellow, signal_boundaries=[-0.05, 1.05])
-
-    signals['concentration'] = signal_concentration
-    signals['mellow'] = signal_mellow
-    viewers['concentration-mellow'] = viewer_concentration_mellow
+    signals['eeg'] = signal_eeg
+    viewers['eeg'] = viewer_eeg
 
     # Initializing the server
     try:
-        server = MuseServer(signal=signals, viewer=viewers)
+        server = MuseServer(port=port, signal=signals, viewer=viewers)
     except ServerError, err:
         print str(err)
         sys.exit(1)
@@ -39,9 +30,17 @@ def main():
     for sign in viewers:
         viewers[sign].show()
 
+    return server
+
+
+def main():
+    server_5001 = run_server(5001)
+    server_5002 = run_server(5002)
+
     # Starting the server
     try:
-        server.start()
+        server_5001.start()
+        server_5002.start()
         while 1:
             time.sleep(0.01)
     except KeyboardInterrupt:
