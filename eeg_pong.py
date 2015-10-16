@@ -12,18 +12,10 @@ def main():
     # initialization of variables
     signals, viewers = dict(), dict()
 
-    # EEG signal
-    #signal_eeg = MuseEEG(length=2000, acquisition_freq=220.0, do_fft=False)
-    #viewer_eeg = MuseViewerSignal(signal_eeg, 220.0, signal_boundaries=[600, 1200])
-
-    #signals['eeg'] = signal_eeg
-    #viewers['eeg'] = viewer_eeg
-
     # Concentration and Mellow
     signal_concentration = MuseConcentration(length=400, acquisition_freq=10.0)
     signal_mellow = MuseMellow(length=400, acquisition_freq=10.0)
     viewer_concentration_mellow = MuseViewerConcentrationMellow(signal_concentration, signal_mellow, signal_boundaries=[-0.05, 1.05])
-
 
     signals['concentration'] = signal_concentration
     signals['mellow'] = signal_mellow
@@ -36,13 +28,14 @@ def main():
         print str(err)
         sys.exit(1)
 
-    # Displaying the viewers
-    for sign in viewers:
-        viewers[sign].show()
+    import apps.pong.pong as pong
+    pong_game = pong.PongApp()
+    server.game = pong_game
 
     # Starting the server
     try:
         server.start()
+        pong_game.run()
         while 1:
             time.sleep(0.01)
     except KeyboardInterrupt:

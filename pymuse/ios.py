@@ -7,6 +7,7 @@ class MuseServer(ServerThread):
     def __init__(self, port, signal, viewer):
         self.signal = signal
         self.viewer = viewer
+        self.game = None
 
         ServerThread.__init__(self, port)
 
@@ -46,6 +47,7 @@ class MuseServer(ServerThread):
             self.signal['concentration'].add_time()
             self.signal['concentration'].add_concentration(args[0])
             self.viewer['concentration-mellow'].refresh()
+            self.game.change_velocity(self.signal['concentration'].concentration)
 
     # receive mellow data - viewer is the same as concentration
     @make_method('/muse/elements/experimental/mellow', 'f')
