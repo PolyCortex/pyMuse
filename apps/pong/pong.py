@@ -34,11 +34,15 @@ class PongGame(Widget):
     ball = ObjectProperty(None)
     player1 = ObjectProperty(None)
     player2 = ObjectProperty(None)
+    concentration = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(PongGame, self).__init__(**kwargs)
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
+
+        # initialize concentration
+        self.concentration = 0.0
 
     def _keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
@@ -85,7 +89,8 @@ class PongGame(Widget):
         return True
 
     def change_velocity(self, concentration=[0], coeff_concentration=4.0):
-        self.ball.velocity[0] = int(sign(self.ball.velocity[0]) * (self.ball.init_velocity[0] + coeff_concentration * concentration[-1]))
+        self.concentration = round(concentration[-1],1)
+        self.ball.velocity[0] = int(sign(self.ball.velocity[0]) * (self.ball.init_velocity[0] + coeff_concentration * self.concentration))
 
 
 class PongApp(App):
