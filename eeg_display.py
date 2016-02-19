@@ -12,13 +12,15 @@ def main():
     # initialization of variables
     signals, viewers = dict(), dict()
 
+    """
     # EEG signal
-    #signal_eeg = MuseEEG(length=2000, acquisition_freq=220.0, do_fft=False)
-    #viewer_eeg = MuseViewerSignal(signal_eeg, 220.0, signal_boundaries=[600, 1200])
+    signal_eeg = MuseEEG(length=2000, acquisition_freq=220.0, do_fft=False)
+    viewer_eeg = MuseViewerSignal(signal_eeg, 220.0, signal_boundaries=[600, 1200])
 
-    #signals['eeg'] = signal_eeg
-    #viewers['eeg'] = viewer_eeg
+    signals['eeg'] = signal_eeg
+    viewers['eeg'] = viewer_eeg
 
+    """
     # Concentration and Mellow
     signal_concentration = MuseConcentration(length=400, acquisition_freq=10.0)
     signal_mellow = MuseMellow(length=400, acquisition_freq=10.0)
