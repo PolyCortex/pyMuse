@@ -2,7 +2,7 @@ __author__ = 'benjamindeleener'
 
 import sys
 import time
-from pymuse.ios import MuseServer
+from pymuse.ios import MuseServer, MuseIOOSC
 from pymuse.viz import MuseViewerSignal, MuseViewerConcentrationMellow
 from pymuse.signals import MuseEEG, MuseConcentration, MuseMellow
 from liblo import ServerError
@@ -12,7 +12,6 @@ def main():
     # initialization of variables
     signals, viewers = dict(), dict()
 
-    """
     # EEG signal
     signal_eeg = MuseEEG(length=2000, acquisition_freq=220.0, do_fft=False)
     viewer_eeg = MuseViewerSignal(signal_eeg, 220.0, signal_boundaries=[600, 1200])
@@ -26,14 +25,14 @@ def main():
     signal_mellow = MuseMellow(length=400, acquisition_freq=10.0)
     viewer_concentration_mellow = MuseViewerConcentrationMellow(signal_concentration, signal_mellow, signal_boundaries=[-0.05, 1.05])
 
-
     signals['concentration'] = signal_concentration
     signals['mellow'] = signal_mellow
     viewers['concentration-mellow'] = viewer_concentration_mellow
+    """
 
     # Initializing the server
     try:
-        server = MuseServer(port=5001, signal=signals, viewer=viewers)
+        server = MuseIOOSC(port=5005, signal=signals, viewer=viewers)
     except ServerError, err:
         print str(err)
         sys.exit(1)
