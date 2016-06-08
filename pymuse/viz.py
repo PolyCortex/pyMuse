@@ -22,6 +22,7 @@ class MuseViewer(object):
         else:
             self.low, self.high = 0, 1
 
+
 class MuseViewerSignal(MuseViewer):
     def __init__(self, signal, acquisition_freq, signal_boundaries=None):
         super(MuseViewerSignal, self).__init__(acquisition_freq, signal_boundaries)
