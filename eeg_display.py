@@ -5,7 +5,6 @@ import time
 from pymuse.ios import MuseServer, MuseIOOSC
 from pymuse.viz import MuseViewerSignal, MuseViewerConcentrationMellow
 from pymuse.signals import MuseEEG, MuseConcentration, MuseMellow
-from liblo import ServerError
 
 
 def main():
