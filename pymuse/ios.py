@@ -1,34 +1,91 @@
 __author__ = 'benjamindeleener'
-from liblo import *
-import socket
+has_liblo = True
+try:
+    from liblo import *
+except ImportError:
+    has_liblo = False
+
+has_oscserver = True
+try:
+    from OSC import OSCServer
+except ImportError:
+    has_oscserver = False
+
+import types
+from time import sleep
 
 
-class MuseIOUDP():
-    def __init__(self, port, signal=None, viewer=None):
+# this method of reporting timeouts only works by convention
+# that before calling handle_request() field .timed_out is
+# set to False
+def handle_timeout(self):
+    self.timed_out = True
+
+
+class MuseIOOSC():
+    def __init__(self, port=5005, signal=None, viewer=None):
         self.signal = signal
         self.viewer = viewer
         self.game = None
         self.port = port
         self.udp_ip = '127.0.0.1'
 
-    def initializePort(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind((self.udp_ip, self.port))
-        print 'Port started to listen'
-        while True:
-            data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-            print data
+        self.server = OSCServer((self.udp_ip, self.port))
+        self.server.timeout = 0
 
+        # funny python's way to add a method to an instance of a class
+        self.server.handle_timeout = types.MethodType(handle_timeout, self.server)
+
+        # add message handlers
+        self.server.addMsgHandler("/muse/eeg", self.callback_eeg_raw)
+        self.server.addMsgHandler("default", self.default_handler)
+
+    def default_handler(self, addr, tags, stuff, source):
+        # nothing to do here. This function is called for all messages that are not supported by the application.
+        print "SERVER: No handler registered for ", addr
+        return None
+
+    def callback_eeg_raw(self, path, tags, args, source):
+        # which user will be determined by path:
+        # we just throw away all slashes and join together what's left
+        user = ''.join(path.split("/"))
+        # tags will contain 'ffff'
+        # args is a OSCMessage with data
+        # source is where the message came from (in case you need to reply)
+        self.signal['eeg'].add_time()
+        self.signal['eeg'].add_l_ear(args[0])
+        self.signal['eeg'].add_l_forehead(args[1])
+        self.signal['eeg'].add_r_forehead(args[2])
+        self.signal['eeg'].add_r_ear(args[3])
+        self.viewer['eeg'].refresh()
+        #print args[0], args[1], args[2], args[3]
+
+    def handle_request(self):
+        # clear timed_out flag
+        self.server.timed_out = False
+        # handle all pending requests then return
+        while not self.server.timed_out:
+            self.server.handle_request()
+
+    def start(self, freq=220):
+        update_timing = 1.0/float(freq)
+        while True:
+            sleep(update_timing)
+            io_udp.handle_request()
 
 
 class MuseServer(ServerThread):
     # listen for messages on port 5001
     def __init__(self, port, signal, viewer):
+        global has_liblo
         self.signal = signal
         self.viewer = viewer
         self.game = None
+        self.server_initialized = False
 
-        ServerThread.__init__(self, port)
+        if has_liblo:
+            self.server_initialized = True
+            ServerThread.__init__(self, port)
 
     # receive accelrometer data
     @make_method('/muse/acc', 'fff')
@@ -85,5 +142,6 @@ class MuseServer(ServerThread):
 
 
 if __name__ == "__main__":
-    io_udp = MuseIOUDP(5000)
-    io_udp.initializePort()
+    io_udp = MuseIOOSC()
+    io_udp.start()
+
