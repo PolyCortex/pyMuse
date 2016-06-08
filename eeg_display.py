@@ -32,7 +32,7 @@ def main():
 
     # Initializing the server
     try:
-        server = MuseIOOSC(port=5005, signal=signals, viewer=viewers)
+        server = MuseIOOSC(port=5001, signal=signals, viewer=viewers)
     except ServerError, err:
         print str(err)
         sys.exit(1)

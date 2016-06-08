@@ -23,7 +23,7 @@ def handle_timeout(self):
 
 
 class MuseIOOSC():
-    def __init__(self, port=5005, signal=None, viewer=None):
+    def __init__(self, port=5001, signal=None, viewer=None):
         self.signal = signal
         self.viewer = viewer
         self.game = None
@@ -71,7 +71,7 @@ class MuseIOOSC():
         update_timing = 1.0/float(freq)
         while True:
             sleep(update_timing)
-            io_udp.handle_request()
+            self.handle_request()
 
 
 class MuseServer(ServerThread):
