@@ -37,7 +37,8 @@ class MuseIOOSC():
         self.server.handle_timeout = types.MethodType(handle_timeout, self.server)
 
         # add message handlers
-        self.server.addMsgHandler("/muse/eeg", self.callback_eeg_raw)
+        if 'eeg' in self.signal:
+            self.server.addMsgHandler("/muse/eeg", self.callback_eeg_raw)
         self.server.addMsgHandler("default", self.default_handler)
 
     def default_handler(self, addr, tags, stuff, source):
@@ -57,7 +58,8 @@ class MuseIOOSC():
         self.signal['eeg'].add_l_forehead(args[1])
         self.signal['eeg'].add_r_forehead(args[2])
         self.signal['eeg'].add_r_ear(args[3])
-        self.viewer['eeg'].refresh()
+        if 'eeg' in self.viewer:
+            self.viewer['eeg'].refresh()
         #print args[0], args[1], args[2], args[3]
 
     def handle_request(self):

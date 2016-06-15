@@ -2,7 +2,7 @@ __author__ = 'benjamindeleener'
 
 import sys
 import time
-from pymuse.ios import MuseServer, MuseIOOSC
+from pymuse.ios import MuseIOOSC
 from pymuse.viz import MuseViewerSignal, MuseViewerConcentrationMellow
 from pymuse.signals import MuseEEG, MuseConcentration, MuseMellow
 
