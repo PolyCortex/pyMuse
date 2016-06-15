@@ -2,10 +2,10 @@ __author__ = 'benjamindeleener'
 
 import sys
 import time
-from pymuse.ios import MuseServer, MuseIOOSC
+from pymuse.ios import MuseIOOSC
 from pymuse.viz import MuseViewerSignal, MuseViewerConcentrationMellow
 from pymuse.signals import MuseEEG, MuseConcentration, MuseMellow
-from liblo import ServerError
+#from liblo import ServerError
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
     viewer_eeg = MuseViewerSignal(signal_eeg, 220.0, signal_boundaries=[600, 1200])
 
     signals['eeg'] = signal_eeg
-    viewers['eeg'] = viewer_eeg
+    #viewers['eeg'] = viewer_eeg
 
     """
     # Concentration and Mellow
@@ -37,7 +37,7 @@ def main():
         print str(err)
         sys.exit(1)
 
-    # Displaying the viewers
+      # Displaying the viewers
     for sign in viewers:
         viewers[sign].show()
 
