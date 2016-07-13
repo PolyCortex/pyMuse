@@ -1,5 +1,5 @@
 __author__ = 'benjamindeleener'
-from numpy import fft, linspace
+from numpy import linspace
 from datetime import datetime
 
 class MuseSignal(object):
@@ -16,37 +16,26 @@ class MuseSignal(object):
 
 
 class MuseEEG(MuseSignal):
-    def __init__(self, length=200, acquisition_freq=220.0, do_fft=False):
+    def __init__(self, length=200, acquisition_freq=220.0):
         super(MuseEEG, self).__init__(length, acquisition_freq)
-        self.do_fft = do_fft
-        self.l_ear, self.l_forehead, self.r_forehead, self.r_ear = [0.0] * self.length, [0.0] * self.length, [
-            0.0] * self.length, [0.0] * self.length
-        self.l_ear_fft, self.l_forehead_fft, self.r_forehead_fft, self.r_ear_fft = [0.0] * self.length, [0.0] * self.length, [
-            0.0] * self.length, [0.0] * self.length
+        self.l_ear, self.l_forehead, self.r_forehead, self.r_ear = [0.0] * self.length, [0.0] * self.length, \
+                                                                   [0.0] * self.length, [0.0] * self.length
 
     def add_l_ear(self, s):
         self.l_ear.append(s)
         del self.l_ear[0]
-        if self.do_fft:
-            self.l_ear_fft = fft.fft(self.l_ear)
 
     def add_l_forehead(self, s):
         self.l_forehead.append(s)
         del self.l_forehead[0]
-        if self.do_fft:
-            self.l_forehead_fft = fft.fft(self.l_forehead)
 
     def add_r_forehead(self, s):
         self.r_forehead.append(s)
         del self.r_forehead[0]
-        if self.do_fft:
-            self.r_forehead_fft = fft.fft(self.r_forehead)
 
     def add_r_ear(self, s):
         self.r_ear.append(s)
         del self.r_ear[0]
-        if self.do_fft:
-            self.r_ear_fft = fft.fft(self.r_ear)
 
 
 class MuseConcentration(MuseSignal):
