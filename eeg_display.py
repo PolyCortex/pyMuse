@@ -2,7 +2,7 @@ __author__ = 'benjamindeleener'
 
 import sys
 import time
-from pymuse.ios import MuseIOOSC
+from pymuse.ios import MuseIO, MuseIOError
 from pymuse.viz import MuseViewerSignal, MuseViewerConcentrationMellow
 from pymuse.signals import MuseEEG, MuseConcentration, MuseMellow
 
@@ -31,8 +31,8 @@ def main():
 
     # Initializing the server
     try:
-        server = MuseIOOSC(port=5001, signal=signals, viewer=viewers)
-    except ServerError, err:
+        server = MuseIO(port=5001, signal=signals, viewer=viewers)
+    except MuseIOError, err:
         print str(err)
         sys.exit(1)
 
