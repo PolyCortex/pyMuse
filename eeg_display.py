@@ -12,7 +12,7 @@ def main():
     signals, viewers = dict(), dict()
 
     # EEG signal
-    signal_eeg = MuseEEG(length=2000, acquisition_freq=220.0, do_fft=False)
+    signal_eeg = MuseEEG(length=2000, acquisition_freq=220.0)
     viewer_eeg = MuseViewerSignal(signal_eeg, 220.0, signal_boundaries=[600, 1200])
 
     signals['eeg'] = signal_eeg
