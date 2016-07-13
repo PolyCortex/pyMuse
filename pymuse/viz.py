@@ -34,32 +34,21 @@ class MuseViewerSignal(MuseViewer):
         self.ax3.set_title('Right forehead')
         self.ax4.set_title('Right ear')
 
-        if self.signal.do_fft:
-            self.ax1_plot, = self.ax1.plot(self.x_data[0:len(self.x_data)/2], self.signal.l_ear_fft[0:len(self.x_data)/2])
-            self.ax2_plot, = self.ax2.plot(self.x_data[0:len(self.x_data)/2], self.signal.l_forehead_fft[0:len(self.x_data)/2])
-            self.ax3_plot, = self.ax3.plot(self.x_data[0:len(self.x_data)/2], self.signal.r_forehead_fft[0:len(self.x_data)/2])
-            self.ax4_plot, = self.ax4.plot(self.x_data[0:len(self.x_data)/2], self.signal.r_ear_fft[0:len(self.x_data)/2])
+        self.ax1_plot, = self.ax1.plot(self.signal.time, self.signal.l_ear)
+        self.ax2_plot, = self.ax2.plot(self.signal.time, self.signal.l_forehead)
+        self.ax3_plot, = self.ax3.plot(self.signal.time, self.signal.r_forehead)
+        self.ax4_plot, = self.ax4.plot(self.signal.time, self.signal.r_ear)
 
-            self.ax1.set_ylim([0, 10000])
-            self.ax2.set_ylim([0, 10000])
-            self.ax3.set_ylim([0, 10000])
-            self.ax4.set_ylim([0, 10000])
-        else:
-            self.ax1_plot, = self.ax1.plot(self.signal.time, self.signal.l_ear)
-            self.ax2_plot, = self.ax2.plot(self.signal.time, self.signal.l_forehead)
-            self.ax3_plot, = self.ax3.plot(self.signal.time, self.signal.r_forehead)
-            self.ax4_plot, = self.ax4.plot(self.signal.time, self.signal.r_ear)
+        self.ax1.set_ylim([self.low, self.high])
+        self.ax2.set_ylim([self.low, self.high])
+        self.ax3.set_ylim([self.low, self.high])
+        self.ax4.set_ylim([self.low, self.high])
 
-            self.ax1.set_ylim([self.low, self.high])
-            self.ax2.set_ylim([self.low, self.high])
-            self.ax3.set_ylim([self.low, self.high])
-            self.ax4.set_ylim([self.low, self.high])
-
-            formatter = mticker.FuncFormatter(timeTicks)
-            self.ax1.xaxis.set_major_formatter(formatter)
-            self.ax2.xaxis.set_major_formatter(formatter)
-            self.ax3.xaxis.set_major_formatter(formatter)
-            self.ax4.xaxis.set_major_formatter(formatter)
+        formatter = mticker.FuncFormatter(timeTicks)
+        self.ax1.xaxis.set_major_formatter(formatter)
+        self.ax2.xaxis.set_major_formatter(formatter)
+        self.ax3.xaxis.set_major_formatter(formatter)
+        self.ax4.xaxis.set_major_formatter(formatter)
 
         plt.ion()
 
@@ -75,24 +64,18 @@ class MuseViewerSignal(MuseViewer):
         else:
             return
 
-        if self.signal.do_fft:
-            self.ax1_plot.set_ydata(self.signal.l_ear_fft[0:len(self.x_data)/2])
-            self.ax2_plot.set_ydata(self.signal.l_forehead_fft[0:len(self.x_data)/2])
-            self.ax3_plot.set_ydata(self.signal.r_forehead_fft[0:len(self.x_data)/2])
-            self.ax4_plot.set_ydata(self.signal.r_ear_fft[0:len(self.x_data)/2])
-        else:
-            self.ax1_plot.set_ydata(self.signal.l_ear)
-            self.ax2_plot.set_ydata(self.signal.l_forehead)
-            self.ax3_plot.set_ydata(self.signal.r_forehead)
-            self.ax4_plot.set_ydata(self.signal.r_ear)
+        self.ax1_plot.set_ydata(self.signal.l_ear)
+        self.ax2_plot.set_ydata(self.signal.l_forehead)
+        self.ax3_plot.set_ydata(self.signal.r_forehead)
+        self.ax4_plot.set_ydata(self.signal.r_ear)
 
-            times = list(linspace(self.signal.time[0], self.signal.time[-1], self.signal.length))
-            self.ax1_plot.set_xdata(times)
-            self.ax2_plot.set_xdata(times)
-            self.ax3_plot.set_xdata(times)
-            self.ax4_plot.set_xdata(times)
+        times = list(linspace(self.signal.time[0], self.signal.time[-1], self.signal.length))
+        self.ax1_plot.set_xdata(times)
+        self.ax2_plot.set_xdata(times)
+        self.ax3_plot.set_xdata(times)
+        self.ax4_plot.set_xdata(times)
 
-            self.ax1.set_xlim(self.signal.time[0], self.signal.time[-1])
+        self.ax1.set_xlim(self.signal.time[0], self.signal.time[-1])
 
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
