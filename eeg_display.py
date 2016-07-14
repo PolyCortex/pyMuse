@@ -3,7 +3,7 @@ __author__ = 'benjamindeleener'
 import sys
 import time
 from pymuse.ios import MuseIO, MuseIOError
-from pymuse.viz import MuseViewerSignal, MuseViewerConcentrationMellow
+from pymuse.viz import ViewerMuseEEG, MuseViewerConcentrationMellow
 from pymuse.signals import MuseEEG, MuseConcentration, MuseMellow
 
 
@@ -13,7 +13,7 @@ def main():
 
     # EEG signal
     signal_eeg = MuseEEG(length=2000, acquisition_freq=220.0)
-    viewer_eeg = MuseViewerSignal(signal_eeg, 220.0, signal_boundaries=[600, 1200])
+    viewer_eeg = ViewerMuseEEG(signal_eeg, 220.0, signal_boundaries=[600, 1200])
 
     signals['eeg'] = signal_eeg
     viewers['eeg'] = viewer_eeg

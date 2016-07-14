@@ -2,7 +2,7 @@ __author__ = 'benjamindeleener'
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from datetime import datetime, timedelta
-from numpy import linspace
+import numpy as np
 
 
 def timeTicks(x, pos):
@@ -10,7 +10,7 @@ def timeTicks(x, pos):
     return str(d)
 
 
-class MuseViewer(object):
+class Viewer(object):
     def __init__(self, acquisition_freq, signal_boundaries=None):
         self.refresh_freq = 0.4  # default=0.15
         self.acquisition_freq = acquisition_freq
@@ -22,10 +22,84 @@ class MuseViewer(object):
         else:
             self.low, self.high = 0, 1
 
+    def refresh(self):
+        pass
 
-class MuseViewerSignal(MuseViewer):
+    def show(self):
+        plt.show(block=False)
+        self.refresh()
+
+
+class ViewerMuseFFT(Viewer):
     def __init__(self, signal, acquisition_freq, signal_boundaries=None):
-        super(MuseViewerSignal, self).__init__(acquisition_freq, signal_boundaries)
+        """
+        Plots a Single-Sided Amplitude Spectrum of y(t)
+        """
+        super(ViewerMuseFFT, self).__init__(acquisition_freq, signal_boundaries)
+        self.signal = signal
+
+        k = np.arange(self.signal.length)
+        T = self.signal.length / acquisition_freq
+        frq = k / T  # two sides frequency range
+        self.x_frq = frq[range(self.signal.length / 2)]  # one side frequency range
+
+        self.signal_l_ear_fft = np.fft.fft(self.signal.l_ear) / self.signal.length  # fft computing and normalization
+        self.signal_l_ear_fft = self.signal_l_ear_fft[range(self.signal.length / 2)]
+        self.signal_l_forehead_fft = np.fft.fft(self.signal.l_forehead) / self.signal.length  # fft computing and normalization
+        self.signal_l_forehead_fft = self.signal_l_forehead_fft[range(self.signal.length / 2)]
+        self.signal_r_forehead_fft = np.fft.fft(self.signal.r_forehead) / self.signal.length  # fft computing and normalization
+        self.signal_r_forehead_fft = self.signal_r_forehead_fft[range(self.signal.length / 2)]
+        self.signal_r_ear_fft = np.fft.fft(self.signal.r_ear) / self.signal.length  # fft computing and normalization
+        self.signal_r_ear_fft = self.signal_r_ear_fft[range(self.signal.length / 2)]
+
+        self.figure, (self.ax1, self.ax2, self.ax3, self.ax4) = plt.subplots(4, 1, sharex=True, figsize=(15, 10))
+        self.ax1.set_title('Left ear')
+        self.ax2.set_title('Left forehead')
+        self.ax3.set_title('Right forehead')
+        self.ax4.set_title('Right ear')
+
+        self.ax1_plot, = self.ax1.plot(self.x_frq, self.signal_l_ear_fft)
+        self.ax2_plot, = self.ax2.plot(self.x_frq, self.signal_l_forehead_fft)
+        self.ax3_plot, = self.ax3.plot(self.x_frq, self.signal_r_forehead_fft)
+        self.ax4_plot, = self.ax4.plot(self.x_frq, self.signal_r_ear_fft)
+        self.ax4_plot.set_xlabel('Frequency (Hz)')
+
+        self.ax1.set_ylim([self.low, self.high])
+        self.ax2.set_ylim([self.low, self.high])
+        self.ax3.set_ylim([self.low, self.high])
+        self.ax4.set_ylim([self.low, self.high])
+
+        plt.ion()
+
+    def refresh(self):
+        time_now = datetime.now()
+        if (time_now - self.last_refresh).total_seconds() > self.refresh_freq:
+            self.last_refresh = time_now
+            pass
+        else:
+            return
+
+        self.signal_l_ear_fft = np.fft.fft(self.signal.l_ear) / self.signal.length  # fft computing and normalization
+        self.signal_l_ear_fft = self.signal_l_ear_fft[range(self.signal.length / 2)]
+        self.signal_l_forehead_fft = np.fft.fft(self.signal.l_forehead) / self.signal.length  # fft computing and normalization
+        self.signal_l_forehead_fft = self.signal_l_forehead_fft[range(self.signal.length / 2)]
+        self.signal_r_forehead_fft = np.fft.fft(self.signal.r_forehead) / self.signal.length  # fft computing and normalization
+        self.signal_r_forehead_fft = self.signal_r_forehead_fft[range(self.signal.length / 2)]
+        self.signal_r_ear_fft = np.fft.fft(self.signal.r_ear) / self.signal.length  # fft computing and normalization
+        self.signal_r_ear_fft = self.signal_r_ear_fft[range(self.signal.length / 2)]
+
+        self.ax1_plot.set_ydata(self.signal_l_ear_fft)
+        self.ax2_plot.set_ydata(self.signal_l_forehead_fft)
+        self.ax3_plot.set_ydata(self.signal_r_forehead_fft)
+        self.ax4_plot.set_ydata(self.signal_r_ear_fft)
+
+        self.figure.canvas.draw()
+        self.figure.canvas.flush_events()
+
+
+class ViewerMuseEEG(Viewer):
+    def __init__(self, signal, acquisition_freq, signal_boundaries=None):
+        super(ViewerMuseEEG, self).__init__(acquisition_freq, signal_boundaries)
         self.signal = signal
 
         self.figure, (self.ax1, self.ax2, self.ax3, self.ax4) = plt.subplots(4, 1, sharex=True, figsize=(15, 10))
@@ -69,7 +143,7 @@ class MuseViewerSignal(MuseViewer):
         self.ax3_plot.set_ydata(self.signal.r_forehead)
         self.ax4_plot.set_ydata(self.signal.r_ear)
 
-        times = list(linspace(self.signal.time[0], self.signal.time[-1], self.signal.length))
+        times = list(np.linspace(self.signal.time[0], self.signal.time[-1], self.signal.length))
         self.ax1_plot.set_xdata(times)
         self.ax2_plot.set_xdata(times)
         self.ax3_plot.set_xdata(times)
@@ -127,7 +201,7 @@ class MuseViewerConcentrationMellow(object):
         self.ax1_plot.set_ydata(self.signal_concentration.concentration)
         self.ax2_plot.set_ydata(self.signal_mellow.mellow)
 
-        times = list(linspace(self.signal_concentration.time[0], self.signal_concentration.time[-1], self.signal_concentration.length))
+        times = list(np.linspace(self.signal_concentration.time[0], self.signal_concentration.time[-1], self.signal_concentration.length))
         self.ax1_plot.set_xdata(times)
         self.ax2_plot.set_xdata(times)
 
