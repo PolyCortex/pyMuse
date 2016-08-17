@@ -24,8 +24,7 @@ class MuseIOError(OSCError):
 
 
 class MuseIO():
-    def __init__(self, lock, port=5001, signal=None):
-        self.lock = lock
+    def __init__(self, port=5001, signal=None):
         self.signal = signal
         self.port = port
         self.udp_ip = '127.0.0.1'
@@ -56,9 +55,9 @@ class MuseIO():
         # tags will contain 'ffff'
         # args is a OSCMessage with data
         # source is where the message came from (in case you need to reply)
-        self.lock.acquire()
+        self.signal['eeg'].lock.acquire()
         self.signal['eeg'].add_data(args)
-        self.lock.release()
+        self.signal['eeg'].lock.release()
 
     def callback_concentration(self, path, tags, args, source):
         if 'concentration' in self.signal:

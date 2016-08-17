@@ -1,6 +1,7 @@
 __author__ = 'benjamindeleener'
 import numpy as np
 from datetime import datetime
+import multiprocessing
 
 class Signal(object):
     def __init__(self, length, estimated_acquisition_freq):
@@ -8,6 +9,7 @@ class Signal(object):
         self.estimated_acq_freq = estimated_acquisition_freq
         self.time = np.linspace(-float(self.length) / self.estimated_acq_freq + 1.0 / self.estimated_acq_freq, 0.0, self.length)
         self.init_time = datetime.now()
+        self.lock = multiprocessing.Lock()
 
     def add_time(self):
         diff = datetime.now() - self.init_time

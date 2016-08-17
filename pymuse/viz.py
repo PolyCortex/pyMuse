@@ -12,8 +12,7 @@ def timeTicks(x, pos):
 
 
 class Viewer(object):
-    def __init__(self, lock, refresh_freq=10.0, signal_boundaries=None):
-        self.lock = lock
+    def __init__(self, refresh_freq=10.0, signal_boundaries=None):
         self.refresh_freq = refresh_freq
         self.init_time = datetime.now()
         self.last_refresh = datetime.now()
@@ -37,8 +36,8 @@ class Viewer(object):
 
 
 class ViewerSignal(Viewer):
-    def __init__(self, signal, lock, window_duration=5000.0, refresh_freq=10.0, signal_boundaries=None):
-        super(ViewerSignal, self).__init__(lock, refresh_freq, signal_boundaries)
+    def __init__(self, signal, window_duration=5000.0, refresh_freq=10.0, signal_boundaries=None):
+        super(ViewerSignal, self).__init__(refresh_freq, signal_boundaries)
         self.signal = signal
         self.window_duration = window_duration
         self.number_of_channels = self.signal.number_of_channels
@@ -47,9 +46,9 @@ class ViewerSignal(Viewer):
         self.axes_plot = []
         formatter = mticker.FuncFormatter(timeTicks)
 
-        self.lock.acquire()
+        self.signal.lock.acquire()
         signal_time, signal_data = self.signal.get_window_ms(length_window=self.window_duration)
-        self.lock.release()
+        self.signal.lock.release()
 
         for i, label in enumerate(self.signal.label_channels):
             self.axes[i].set_title(label)
@@ -69,9 +68,9 @@ class ViewerSignal(Viewer):
             else:
                 return
 
-            self.lock.acquire()
+            self.signal.lock.acquire()
             signal_time, signal_data = self.signal.get_window_ms(length_window=self.window_duration)
-            self.lock.release()
+            self.signal.lock.release()
             for i in range(self.number_of_channels):
                 self.axes_plot[i].set_ydata(signal_data[i, :])
                 times = np.linspace(signal_time[0], signal_time[-1], len(signal_time))
