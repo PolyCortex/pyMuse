@@ -11,7 +11,7 @@ class Signal(object):
 
     def add_time(self):
         diff = datetime.now() - self.init_time
-        np.roll(self.time, -1, axis=1)
+        self.time = np.roll(self.time, -1)
         self.time[-1] = float(diff.total_seconds() * 1000)  # in milliseconds
 
     def compute_real_acquisition_frequency(self, window=None):
@@ -26,12 +26,20 @@ class Signal(object):
 
 
 class MultiChannelSignal(Signal):
-    def __init__(self, length=1000, estimated_acquisition_freq=220, number_of_channels=1):
+    def __init__(self, length=1000, estimated_acquisition_freq=220.0, number_of_channels=None, label_channels=None):
         super(MultiChannelSignal, self).__init__(length, estimated_acquisition_freq)
-        self.number_of_channels = number_of_channels
-        self.signal = np.zeros((self.number_of_channels, self.length))
+        self.label_channels = label_channels
+        if number_of_channels:
+            self.number_of_channels = number_of_channels
+        else:
+            if label_channels:
+                self.number_of_channels = len(self.label_channels)
+            else:
+                self.number_of_channels = 1
+                self.label_channels = ['']
+        self.data = np.zeros((self.number_of_channels, self.length))
 
-    def add_signal(self, s):
+    def add_data(self, s):
         """
         Function for adding a new element in the ndarray. This function calls the inherited function add_time.
         :param s: list of number, length of list must be equal to the number of channels
@@ -39,8 +47,8 @@ class MultiChannelSignal(Signal):
         """
         if len(s) == self.number_of_channels:
             self.add_time()
-            np.roll(self.signal, -1, axis=1)
-            self.signal[:, -1] = s
+            self.data = np.roll(self.data, -1, axis=1)
+            self.data[:, -1] = s
         else:
             print 'Error: length of signal (=' + str(len(s)) + ') is not equal to the number of channel (=' + str(self.number_of_channels) + ').'
 
@@ -57,10 +65,10 @@ class MultiChannelSignal(Signal):
         idx = np.searchsorted(self.time, time_limit, side="left")
 
         # extract elements and return
-        return self.time[idx:], self.signal[idx:, :]
+        return self.time[idx:], self.data[:, idx:]
 
 
-class MuseEEG(MuseSignal):
+class MuseEEG(Signal):
     def __init__(self, length=1000, acquisition_freq=220.0):
         super(MuseEEG, self).__init__(length, acquisition_freq)
         self.l_ear, self.l_forehead, self.r_forehead, self.r_ear = [0.0] * self.length, [0.0] * self.length, \
@@ -83,7 +91,7 @@ class MuseEEG(MuseSignal):
         del self.r_ear[0]
 
 
-class MuseConcentration(MuseSignal):
+class MuseConcentration(Signal):
     def __init__(self, length=200, acquisition_freq=10.0):
         super(MuseConcentration, self).__init__(length, acquisition_freq)
         self.concentration = [0.0] * self.length
@@ -93,7 +101,7 @@ class MuseConcentration(MuseSignal):
         del self.concentration[0]
 
 
-class MuseMellow(MuseSignal):
+class MuseMellow(Signal):
     def __init__(self, length=200, acquisition_freq=10.0):
         super(MuseMellow, self).__init__(length, acquisition_freq)
         self.mellow = [0.0] * self.length

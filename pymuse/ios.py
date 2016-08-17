@@ -24,10 +24,9 @@ class MuseIOError(OSCError):
 
 
 class MuseIO():
-    def __init__(self, port=5001, signal=None, viewer=None):
+    def __init__(self, lock, port=5001, signal=None):
+        self.lock = lock
         self.signal = signal
-        self.viewer = viewer
-        self.game = None
         self.port = port
         self.udp_ip = '127.0.0.1'
 
@@ -48,7 +47,7 @@ class MuseIO():
 
     def default_handler(self, addr, tags, stuff, source):
         # nothing to do here. This function is called for all messages that are not supported by the application.
-        print "SERVER: No handler registered for ", addr
+        #print "SERVER: No handler registered for ", addr
         return None
 
     def callback_eeg_raw(self, path, tags, args, source):
@@ -57,27 +56,20 @@ class MuseIO():
         # tags will contain 'ffff'
         # args is a OSCMessage with data
         # source is where the message came from (in case you need to reply)
-        self.signal['eeg'].add_time()
-        self.signal['eeg'].add_l_ear(args[0])
-        self.signal['eeg'].add_l_forehead(args[1])
-        self.signal['eeg'].add_r_forehead(args[2])
-        self.signal['eeg'].add_r_ear(args[3])
-        if 'eeg' in self.viewer:
-            self.viewer['eeg'].refresh()
-        #print args[0], args[1], args[2], args[3]
+        self.lock.acquire()
+        self.signal['eeg'].add_data(args)
+        self.lock.release()
 
     def callback_concentration(self, path, tags, args, source):
         if 'concentration' in self.signal:
             self.signal['concentration'].add_time()
             self.signal['concentration'].add_concentration(args[0])
-            self.viewer['concentration-mellow'].refresh()
             #self.game.change_velocity(self.signal['concentration'].concentration)
 
     def callback_mellow(self, path, tags, args, source):
         if 'mellow' in self.signal:
             self.signal['mellow'].add_time()
             self.signal['mellow'].add_mellow(args[0])
-            self.viewer['concentration-mellow'].refresh()
 
     def handle_request(self):
         # clear timed_out flag

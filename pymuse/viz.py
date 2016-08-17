@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from datetime import datetime, timedelta
 import numpy as np
+import threading
 
 
 def timeTicks(x, pos):
@@ -11,9 +12,9 @@ def timeTicks(x, pos):
 
 
 class Viewer(object):
-    def __init__(self, acquisition_freq, signal_boundaries=None):
-        self.refresh_freq = 0.4  # default=0.15
-        self.acquisition_freq = acquisition_freq
+    def __init__(self, lock, refresh_freq=10.0, signal_boundaries=None):
+        self.lock = lock
+        self.refresh_freq = refresh_freq
         self.init_time = datetime.now()
         self.last_refresh = datetime.now()
 
@@ -22,12 +23,63 @@ class Viewer(object):
         else:
             self.low, self.high = 0, 1
 
+        self.thread = threading.Thread(target=self.refresh)
+
     def refresh(self):
         pass
 
     def show(self):
         plt.show(block=False)
-        self.refresh()
+
+    def start(self):
+        self.show()
+        self.thread.start()
+
+
+class ViewerSignal(Viewer):
+    def __init__(self, signal, lock, window_duration=5000.0, refresh_freq=10.0, signal_boundaries=None):
+        super(ViewerSignal, self).__init__(lock, refresh_freq, signal_boundaries)
+        self.signal = signal
+        self.window_duration = window_duration
+        self.number_of_channels = self.signal.number_of_channels
+
+        self.figure, self.axes = plt.subplots(self.number_of_channels, 1, sharex=True, figsize=(15, 10))
+        self.axes_plot = []
+        formatter = mticker.FuncFormatter(timeTicks)
+
+        self.lock.acquire()
+        signal_time, signal_data = self.signal.get_window_ms(length_window=self.window_duration)
+        self.lock.release()
+
+        for i, label in enumerate(self.signal.label_channels):
+            self.axes[i].set_title(label)
+            ax_plot, = self.axes[i].plot(signal_time, signal_data[i, :])
+            self.axes_plot.append(ax_plot)
+            self.axes[i].set_ylim([self.low, self.high])
+            self.axes[i].xaxis.set_major_formatter(formatter)
+
+        plt.ion()
+
+    def refresh(self):
+        while True:
+            time_now = datetime.now()
+            if (time_now - self.last_refresh).total_seconds() > 1.0 / self.refresh_freq:
+                self.last_refresh = time_now
+                pass
+            else:
+                return
+
+            self.lock.acquire()
+            signal_time, signal_data = self.signal.get_window_ms(length_window=self.window_duration)
+            self.lock.release()
+            for i in range(self.number_of_channels):
+                self.axes_plot[i].set_ydata(signal_data[i, :])
+                times = np.linspace(signal_time[0], signal_time[-1], len(signal_time))
+                self.axes_plot[i].set_xdata(times)
+            self.axes[0].set_xlim(signal_time[0], signal_time[-1])
+
+            self.figure.canvas.draw()
+            self.figure.canvas.flush_events()
 
 
 class ViewerMuseFFT(Viewer):
@@ -72,29 +124,30 @@ class ViewerMuseFFT(Viewer):
         plt.ion()
 
     def refresh(self):
-        time_now = datetime.now()
-        if (time_now - self.last_refresh).total_seconds() > self.refresh_freq:
-            self.last_refresh = time_now
-            pass
-        else:
-            return
+        while True:
+            time_now = datetime.now()
+            if (time_now - self.last_refresh).total_seconds() > 1.0 / self.refresh_freq:
+                self.last_refresh = time_now
+                pass
+            else:
+                return
 
-        self.signal_l_ear_fft = np.fft.fft(self.signal.l_ear) / self.signal.length  # fft computing and normalization
-        self.signal_l_ear_fft = self.signal_l_ear_fft[range(self.signal.length / 2)]
-        self.signal_l_forehead_fft = np.fft.fft(self.signal.l_forehead) / self.signal.length  # fft computing and normalization
-        self.signal_l_forehead_fft = self.signal_l_forehead_fft[range(self.signal.length / 2)]
-        self.signal_r_forehead_fft = np.fft.fft(self.signal.r_forehead) / self.signal.length  # fft computing and normalization
-        self.signal_r_forehead_fft = self.signal_r_forehead_fft[range(self.signal.length / 2)]
-        self.signal_r_ear_fft = np.fft.fft(self.signal.r_ear) / self.signal.length  # fft computing and normalization
-        self.signal_r_ear_fft = self.signal_r_ear_fft[range(self.signal.length / 2)]
+            self.signal_l_ear_fft = np.fft.fft(self.signal.l_ear) / self.signal.length  # fft computing and normalization
+            self.signal_l_ear_fft = self.signal_l_ear_fft[range(self.signal.length / 2)]
+            self.signal_l_forehead_fft = np.fft.fft(self.signal.l_forehead) / self.signal.length  # fft computing and normalization
+            self.signal_l_forehead_fft = self.signal_l_forehead_fft[range(self.signal.length / 2)]
+            self.signal_r_forehead_fft = np.fft.fft(self.signal.r_forehead) / self.signal.length  # fft computing and normalization
+            self.signal_r_forehead_fft = self.signal_r_forehead_fft[range(self.signal.length / 2)]
+            self.signal_r_ear_fft = np.fft.fft(self.signal.r_ear) / self.signal.length  # fft computing and normalization
+            self.signal_r_ear_fft = self.signal_r_ear_fft[range(self.signal.length / 2)]
 
-        self.ax1_plot.set_ydata(self.signal_l_ear_fft)
-        self.ax2_plot.set_ydata(self.signal_l_forehead_fft)
-        self.ax3_plot.set_ydata(self.signal_r_forehead_fft)
-        self.ax4_plot.set_ydata(self.signal_r_ear_fft)
+            self.ax1_plot.set_ydata(self.signal_l_ear_fft)
+            self.ax2_plot.set_ydata(self.signal_l_forehead_fft)
+            self.ax3_plot.set_ydata(self.signal_r_forehead_fft)
+            self.ax4_plot.set_ydata(self.signal_r_ear_fft)
 
-        self.figure.canvas.draw()
-        self.figure.canvas.flush_events()
+            self.figure.canvas.draw()
+            self.figure.canvas.flush_events()
 
 
 class ViewerMuseEEG(Viewer):
