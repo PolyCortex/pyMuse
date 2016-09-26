@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from datetime import datetime, timedelta
 import numpy as np
-import threading
+from utils import Thread
 
 
 def timeTicks(x, pos):
@@ -11,8 +11,11 @@ def timeTicks(x, pos):
     return str(d)
 
 
-class Viewer(object):
+class Viewer(Thread):
     def __init__(self, refresh_freq=10.0, signal_boundaries=None):
+        super(Viewer, self).__init__()
+        self.name = 'viewer'
+
         self.refresh_freq = refresh_freq
         self.init_time = datetime.now()
         self.last_refresh = datetime.now()
@@ -21,11 +24,6 @@ class Viewer(object):
             self.low, self.high = signal_boundaries[0], signal_boundaries[1]
         else:
             self.low, self.high = 0, 1
-
-        self.thread = threading.Thread(target=self.refresh)
-
-    def refresh(self):
-        pass
 
     def show(self):
         plt.show(block=False)
@@ -81,13 +79,33 @@ class ViewerSignal(Viewer):
             self.figure.canvas.flush_events()
 
 
-class ViewerMuseFFT(Viewer):
+class ViewerFrequencySpectrum(Viewer):
     def __init__(self, signal, acquisition_freq, signal_boundaries=None):
         """
         Plots a Single-Sided Amplitude Spectrum of y(t)
         """
-        super(ViewerMuseFFT, self).__init__(acquisition_freq, signal_boundaries)
+        super(ViewerFrequencySpectrum, self).__init__(acquisition_freq, signal_boundaries)
         self.signal = signal
+        self.number_of_channels = self.signal.number_of_channels
+
+        self.figure, self.axes = plt.subplots(self.number_of_channels, 1, sharex=True, figsize=(15, 10))
+        self.axes_plot = []
+        formatter = mticker.FuncFormatter(timeTicks)
+
+        self.signal.lock.acquire()
+        signal_time, signal_data = self.signal.get_window_ms(length_window=self.window_duration)
+        self.signal.lock.release()
+
+        for i, label in enumerate(self.signal.label_channels):
+            self.axes[i].set_title(label)
+            ax_plot, = self.axes[i].plot(signal_time, signal_data[i, :])
+            self.axes_plot.append(ax_plot)
+            self.axes[i].set_ylim([self.low, self.high])
+            self.axes[i].xaxis.set_major_formatter(formatter)
+
+
+
+
 
         k = np.arange(self.signal.length)
         T = self.signal.length / acquisition_freq

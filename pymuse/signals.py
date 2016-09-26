@@ -6,8 +6,8 @@ import multiprocessing
 class Signal(object):
     def __init__(self, length, estimated_acquisition_freq):
         self.length = length
-        self.estimated_acq_freq = estimated_acquisition_freq
-        self.time = np.linspace(-float(self.length) / self.estimated_acq_freq + 1.0 / self.estimated_acq_freq, 0.0, self.length)
+        self.estimated_acquisition_freq = estimated_acquisition_freq
+        self.time = np.linspace(-float(self.length) / self.estimated_acquisition_freq + 1.0 / self.estimated_acquisition_freq, 0.0, self.length)
         self.init_time = datetime.now()
         self.lock = multiprocessing.Lock()
 
@@ -28,7 +28,7 @@ class Signal(object):
 
 
 class MultiChannelSignal(Signal):
-    def __init__(self, length=1000, estimated_acquisition_freq=220.0, number_of_channels=None, label_channels=None):
+    def __init__(self, length=1000, estimated_acquisition_freq=220.0, number_of_channels=None, label_channels=None, signal_data=None, signal_time=None):
         super(MultiChannelSignal, self).__init__(length, estimated_acquisition_freq)
         self.label_channels = label_channels
         if number_of_channels:
@@ -39,7 +39,14 @@ class MultiChannelSignal(Signal):
             else:
                 self.number_of_channels = 1
                 self.label_channels = ['']
-        self.data = np.zeros((self.number_of_channels, self.length))
+
+        if signal_data is None:
+            self.data = np.zeros((self.number_of_channels, self.length))
+        else:
+            self.data = signal_data
+
+        if signal_time is not None:
+            self.time = signal_time
 
     def add_data(self, s):
         """
@@ -68,6 +75,45 @@ class MultiChannelSignal(Signal):
 
         # extract elements and return
         return self.time[idx:], self.data[:, idx:]
+
+    def get_signal_window(self, length_window=200.0):
+        signal_time, signal_data = self.get_window_ms(length_window=length_window)
+        signal = MultiChannelSignal(length=len(signal_time), estimated_acquisition_freq=self.estimated_acquisition_freq,
+                                    number_of_channels=self.number_of_channels, label_channels=self.label_channels,
+                                    signal_data=signal_data, signal_time=signal_time)
+        return signal
+
+
+class MultiChannelFrequencySignal:
+    def __init__(self, length=1000, estimated_acquisition_freq=220.0, number_of_channels=None, label_channels=None, data=None, freq=None):
+        self.length = length
+        self.lock = multiprocessing.Lock()
+        self.estimated_acq_freq = estimated_acquisition_freq
+        self.label_channels = label_channels
+        if number_of_channels:
+            self.number_of_channels = number_of_channels
+        else:
+            if label_channels:
+                self.number_of_channels = len(self.label_channels)
+            else:
+                self.number_of_channels = 1
+                self.label_channels = ['']
+
+        if data is None:
+            self.data = np.zeros((self.number_of_channels, self.length))
+        else:
+            self.data = data
+
+        if freq is None:
+            self.freq = np.linspace(0, self.estimated_acq_freq, self.length / 2)
+        else:
+            self.freq = freq
+
+    def set_data(self, data):
+        self.data = data
+
+    def set_freq(self, freq):
+        self.freq = freq
 
 
 class MuseEEG(Signal):
