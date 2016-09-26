@@ -40,17 +40,15 @@ class Analyzer(Thread):
         self.prepare()
 
     def prepare(self):
-        list_queue = [[Queue(maxsize=1), Queue(maxsize=1)] for _ in self.list_process_string]
-        self.queue_in = list_queue[0][0]
-        self.queue_out = list_queue[-1][1]
+        list_queue = [Queue(maxsize=1) for _ in range(self.number_of_process)]
+        list_queue.append(Queue())  # last queue has no limit
+        self.queue_in = list_queue[0]
+        self.queue_out = list_queue[-1]
 
         for i, process_name in enumerate(self.list_process_string):
             mod = __import__('pymuse.processes', fromlist=[process_name])
             klass = getattr(mod, process_name)
-            self.list_process.append(klass(list_queue[i][0], list_queue[i][1]))
-
-        import threading
-        self.thread_display = threading.Thread(target=self.display_alpha)
+            self.list_process.append(klass(list_queue[i], list_queue[i + 1]))
 
     def get_final_queue(self):
         return self.queue_out
@@ -59,8 +57,6 @@ class Analyzer(Thread):
         for process in self.list_process:
             process.start()
         super(Analyzer, self).start()
-
-        self.thread_display.start()
 
     def display_alpha(self):
         while True:
