@@ -1,4 +1,6 @@
 __author__ = 'benjamindeleener'
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from datetime import datetime, timedelta
@@ -28,7 +30,8 @@ class Viewer(Thread):
 
     def show(self):
         print 'plot show'
-        plt.show(block=False)
+        #plt.show(block=False)
+        plt.show()
 
     def start(self):
         self.show()
