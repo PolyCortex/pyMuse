@@ -1,18 +1,13 @@
-from utils import Thread
+from utils import Thread, AutoQueue
 
-from Queue import Queue
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 
 import numpy as np
 
-def timeTicks(x, pos):
-    d = timedelta(milliseconds=x)
-    return str(d)
-
 
 class Analyzer(Thread):
-    def __init__(self, signal, window_duration, analysis_frequency=10.0, list_process=None):
+    def __init__(self, signal, window_duration, analysis_frequency=10.0, list_process=None, processes_to_visualize=None):
         """
         Constructor of analyzer. This class aims at providing the support for creating analysis pipeline for EEG data.
         
@@ -29,9 +24,12 @@ class Analyzer(Thread):
 
         self.analysis_frequency = analysis_frequency
         self.list_process_string = list_process
-        self.list_process = []
+        self.list_process = {}
         if self.list_process_string is None:
             raise ValueError("No process has been to the list.")
+
+        self.processes_to_visualize = processes_to_visualize
+        self.list_viewer = {}
 
         self.number_of_process = len(self.list_process_string)
         self.queue_in = None
@@ -40,22 +38,22 @@ class Analyzer(Thread):
         self.prepare()
 
     def prepare(self):
-        list_queue = [Queue(maxsize=1) for _ in range(self.number_of_process)]
-        list_queue.append(Queue())  # last queue has no limit
+        list_queue = [AutoQueue(maxsize=1) for _ in range(self.number_of_process)]
+        list_queue.append(AutoQueue(maxsize=100, autodrop=True))  # last queue has no limit
         self.queue_in = list_queue[0]
         self.queue_out = list_queue[-1]
 
         for i, process_name in enumerate(self.list_process_string):
             mod = __import__('pymuse.processes', fromlist=[process_name])
             klass = getattr(mod, process_name)
-            self.list_process.append(klass(list_queue[i], list_queue[i + 1]))
+            self.list_process[process_name] = klass(list_queue[i], list_queue[i + 1])
 
     def get_final_queue(self):
         return self.queue_out
 
     def start(self):
-        for process in self.list_process:
-            process.start()
+        for process_name in self.list_process:
+            self.list_process[process_name].start()
         super(Analyzer, self).start()
 
     def display_alpha(self):
@@ -65,6 +63,14 @@ class Analyzer(Thread):
                 print np.mean(abs(fft_signal.data[:, 7:13]), axis=1)
 
     def refresh(self):
+        for i, process_name in enumerate(self.processes_to_visualize):
+            viewer_name = process_name + "Viewer"
+            mod = __import__('pymuse.viz', fromlist=[viewer_name])
+            klass = getattr(mod, viewer_name)
+            self.list_viewer[process_name] = klass(refresh_freq=self.analysis_frequency,
+                                                   label_channels=self.signal.label_channels)
+            self.list_viewer[process_name].start()
+
         while True:
             time_now = datetime.now()
             if (time_now - self.last_refresh).total_seconds() > 1.0 / self.analysis_frequency:
@@ -79,3 +85,8 @@ class Analyzer(Thread):
             self.signal.lock.release()
 
             self.queue_in.put(signal, block=True, timeout=None)
+
+            # refreshing viewers
+            for process_name in self.list_viewer:
+                if self.list_process[process_name].data is not None:
+                    self.list_viewer[process_name].refresh(self.list_process[process_name].data)

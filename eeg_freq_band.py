@@ -3,11 +3,8 @@ __author__ = 'benjamindeleener'
 import sys
 import time
 from pymuse.ios import MuseIO, MuseIOError
-from pymuse.viz import ViewerFrequencySpectrum
 from pymuse.signals import MultiChannelSignal
 from pymuse.pipeline import Analyzer
-
-import numpy as np
 
 
 def main():
@@ -22,14 +19,11 @@ def main():
     signals['eeg'] = signal_eeg
 
     # Initializing the analyzer
-    pipeline = Analyzer(signal=signals['eeg'], window_duration=200, analysis_frequency=10.0, list_process=['FFT'])
-
-    # Initializing the frequency spectrum viewer
-    viewer_eeg = ViewerFrequencySpectrum(signal=pipeline.get_final_queue(),
-                                         refresh_freq=15.0,
-                                         signal_boundaries=[0, 20],
-                                         label_channels=['Left ear', 'Left forehead', 'Right forehead', 'Right ear'])
-    viewers['fft'] = viewer_eeg
+    pipeline = Analyzer(signal=signals['eeg'],
+                        window_duration=1000,
+                        analysis_frequency=24.0,
+                        list_process=['FFT'],
+                        processes_to_visualize=['FFT'])
 
     # Initializing the server
     try:
@@ -39,10 +33,6 @@ def main():
         sys.exit(1)
 
     pipeline.start()
-
-    # Displaying the viewers
-    for sign in viewers:
-        viewers[sign].start()
 
     # Starting the server
     try:

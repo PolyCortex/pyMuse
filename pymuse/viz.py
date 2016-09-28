@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from datetime import datetime, timedelta
 import numpy as np
-from utils import Thread
-from Queue import Queue
+from utils import AutoQueue
 
 
 def timeTicks(x, pos):
@@ -14,7 +13,7 @@ def timeTicks(x, pos):
     return str(d)
 
 
-class Viewer(Thread):
+class Viewer(object):
     def __init__(self, refresh_freq=10.0, signal_boundaries=None):
         super(Viewer, self).__init__()
         self.name = 'viewer'
@@ -29,13 +28,12 @@ class Viewer(Thread):
             self.low, self.high = 0, 1
 
     def show(self):
-        print 'plot show'
-        #plt.show(block=False)
-        plt.show()
+        plt.show(block=False)
+        #plt.show()
 
     def start(self):
         self.show()
-        self.thread.start()
+        #self.thread.start()
 
 
 class ViewerSignal(Viewer):
@@ -60,6 +58,7 @@ class ViewerSignal(Viewer):
             self.axes[i].set_ylim([self.low, self.high])
             self.axes[i].xaxis.set_major_formatter(formatter)
 
+        self.figure.canvas.draw()
         plt.ion()
 
     def refresh(self):
@@ -84,57 +83,66 @@ class ViewerSignal(Viewer):
             self.figure.canvas.flush_events()
 
 
-class ViewerFrequencySpectrum(Viewer):
-    def __init__(self, signal, refresh_freq=10.0, signal_boundaries=None, label_channels=None):
+class FFTViewer(Viewer):
+    def __init__(self, signal=None, refresh_freq=10.0, signal_boundaries=None, label_channels=None):
         """
         Plots a Single-Sided Amplitude Spectrum of y(t)
         """
-        super(ViewerFrequencySpectrum, self).__init__(refresh_freq, signal_boundaries)
+        if signal_boundaries is None:
+            signal_boundaries = [0, 15]
+        super(FFTViewer, self).__init__(refresh_freq, signal_boundaries)
         self.signal = signal
 
         self.label_channels = label_channels
         self.number_of_channels = len(self.label_channels)
 
-        self.figure, self.axes = plt.subplots(self.number_of_channels, 1, sharex=True, figsize=(15, 10))
+        self.figure, self.axes = plt.subplots(self.number_of_channels, 1, figsize=(15, 10))
         self.axes_plot = []
         formatter = mticker.FuncFormatter(timeTicks)
 
-        fake_freq, fake_data = range(10), np.zeros(10)
+        fake_freq, fake_data = range(1000), np.zeros(1000)
 
         for i, label in enumerate(self.label_channels):
             self.axes[i].set_title(label)
             ax_plot, = self.axes[i].plot(fake_freq, fake_data)
             self.axes_plot.append(ax_plot)
             self.axes[i].set_ylim([self.low, self.high])
-            self.axes[i].xaxis.set_major_formatter(formatter)
+            self.axes[i].set_xlim([0.0, 100.0])
 
+        self.figure.canvas.draw()
         plt.ion()
 
-    def refresh(self):
-        while True:
-            time_now = datetime.now()
-            if (time_now - self.last_refresh).total_seconds() > 1.0 / self.refresh_freq:
-                self.last_refresh = time_now
-                pass
-            else:
-                return
+    def refresh(self, data=None):
+        time_now = datetime.now()
+        if (time_now - self.last_refresh).total_seconds() > 1.0 / self.refresh_freq:
+            self.last_refresh = time_now
+            pass
+        else:
+            return
 
-            if isinstance(self.signal, Queue):
-                signal_to_display = self.signal.get()
-            else:
-                signal_to_display = self.signal
+        if data is not None:
+            signal_to_display = data
+        elif isinstance(self.signal, AutoQueue):
+            signal_to_display = self.signal.get()
+        else:
+            signal_to_display = self.signal
 
-            signal_to_display.lock.acquire()
-            signal_freq = signal_to_display.freq
-            signal_data = abs(signal_to_display.data)
-            signal_to_display.lock.release()
-            for i in range(self.number_of_channels):
-                self.axes_plot[i].set_ydata(signal_data[i, :])
-                self.axes_plot[i].set_xdata(signal_freq)
-            self.axes[0].set_xlim(signal_freq[0], signal_freq[-1])
+        signal_to_display.lock.acquire()
+        signal_freq = signal_to_display.freq
+        signal_data = abs(signal_to_display.data)
+        signal_to_display.lock.release()
+        x_freq = range(0, 100)
 
-            self.figure.canvas.draw()
-            self.figure.canvas.flush_events()
+        for i in range(self.number_of_channels):
+            y_signal = np.interp(x_freq, signal_freq, signal_data[i, :])
+            self.axes_plot[i].set_data(x_freq, y_signal)
+            #self.axes_plot[i].set_data(signal_freq, signal_data[i, :])
+            #self.axes[i].set_xlim(signal_freq[0], signal_freq[-1])
+            #self.axes[i].draw_artist(self.axes_plot[i])
+
+        #self.figure.canvas.update()
+        self.figure.canvas.draw()
+        self.figure.canvas.flush_events()
 
 
 class ViewerMuseEEG(Viewer):
