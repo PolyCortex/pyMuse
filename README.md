@@ -11,7 +11,9 @@ Don't hesitate to go on [Muse Developer website](https://sites.google.com/a/inte
 
 ### Installation of this package
 Make sure you downloaded the right Python distribution and download the pyMuse package (e.g., using `git clone`).
-Open a terminal, go into the package and type: `python setup.py install`
+
+Open a terminal, go into the package and type: `python setup.py install`.
+
 The installer should install all requirements, including:
 * numpy
 * scipy
