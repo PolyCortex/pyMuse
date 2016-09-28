@@ -49,26 +49,3 @@ class FFT(Process):
                                                data=data_out_fft,
                                                freq=x_frq)
         return data_out
-
-
-class Concentration(Process):
-    def __init__(self, queue_in, queue_out):
-        super(Concentration, self).__init__(queue_in, queue_out)
-        self.name = 'fft'
-
-    def process(self, data_in):
-        k = np.arange(data_in.length)
-        T = data_in.length / data_in.estimated_acquisition_freq
-        frq = k / T  # two sides frequency range
-        x_frq = frq[range(data_in.length / 2)]  # one side frequency range
-
-        data_out_fft = np.fft.fft(data_in.data) / data_in.length  # fft computing and normalization
-        data_out_fft = data_out_fft[:, range(data_in.length / 2)]
-
-        data_out = MultiChannelFrequencySignal(length=data_in.length,
-                                               estimated_acquisition_freq=data_in.estimated_acquisition_freq,
-                                               number_of_channels=data_in.number_of_channels,
-                                               label_channels=data_in.label_channels,
-                                               data=data_out_fft,
-                                               freq=x_frq)
-        return data_out

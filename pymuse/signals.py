@@ -3,6 +3,17 @@ import numpy as np
 from datetime import datetime
 import multiprocessing
 
+
+def find_closest(A, target):
+    # A must be sorted and must be a numpy array
+    idx = A.searchsorted(target)
+    idx = np.clip(idx, 1, len(A)-1)
+    left = A[idx-1]
+    right = A[idx]
+    idx -= target - left < right - target
+    return idx
+
+
 class Signal(object):
     def __init__(self, length, estimated_acquisition_freq):
         self.length = length
@@ -115,45 +126,14 @@ class MultiChannelFrequencySignal:
     def set_freq(self, freq):
         self.freq = freq
 
+    def get_frequency_power(self, freq_start, freq_end):
+        freq = np.array(self.freq)
+        idx_boundary = find_closest(freq, np.array([freq_start, freq_end]))
+        power = np.zeros(self.number_of_channels)
+        for i in range(self.number_of_channels):
+            target_values = np.abs(self.data[i, idx_boundary[0]:idx_boundary[1]])**2
+            power[i] = np.sum(target_values) / abs((freq[idx_boundary[1]] - freq[idx_boundary[0]]))
+        return power
 
-class MuseEEG(Signal):
-    def __init__(self, length=1000, acquisition_freq=220.0):
-        super(MuseEEG, self).__init__(length, acquisition_freq)
-        self.l_ear, self.l_forehead, self.r_forehead, self.r_ear = [0.0] * self.length, [0.0] * self.length, \
-                                                                   [0.0] * self.length, [0.0] * self.length
-
-    def add_l_ear(self, s):
-        self.l_ear.append(s)
-        del self.l_ear[0]
-
-    def add_l_forehead(self, s):
-        self.l_forehead.append(s)
-        del self.l_forehead[0]
-
-    def add_r_forehead(self, s):
-        self.r_forehead.append(s)
-        del self.r_forehead[0]
-
-    def add_r_ear(self, s):
-        self.r_ear.append(s)
-        del self.r_ear[0]
-
-
-class MuseConcentration(Signal):
-    def __init__(self, length=200, acquisition_freq=10.0):
-        super(MuseConcentration, self).__init__(length, acquisition_freq)
-        self.concentration = [0.0] * self.length
-
-    def add_concentration(self, s):
-        self.concentration.append(s)
-        del self.concentration[0]
-
-
-class MuseMellow(Signal):
-    def __init__(self, length=200, acquisition_freq=10.0):
-        super(MuseMellow, self).__init__(length, acquisition_freq)
-        self.mellow = [0.0] * self.length
-
-    def add_mellow(self, s):
-        self.mellow.append(s)
-        del self.mellow[0]
+    def get_alpha_power(self):
+        return self.get_frequency_power(8.0, 13.0)
