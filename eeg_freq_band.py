@@ -2,7 +2,7 @@ __author__ = 'benjamindeleener'
 
 import sys
 import time
-from pymuse.ios import MuseIO, MuseIOError
+from pymuse.ios import OpenBCIIO, MuseIO, MuseIOError
 from pymuse.signals import MultiChannelSignal
 from pymuse.pipeline import Analyzer
 
@@ -27,7 +27,8 @@ def main():
 
     # Initializing the server
     try:
-        server = MuseIO(port=5001, signal=signals)
+        #server = MuseIO(port=5001, signal=signals)
+        server = OpenBCIIO(port_name='/dev/tty.usbserial-DB00MF30', baud=115200, signal=signals)
     except MuseIOError, err:
         print str(err)
         sys.exit(1)

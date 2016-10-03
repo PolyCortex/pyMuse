@@ -5,10 +5,12 @@ try:
     from OSC import OSCServer, OSCError
 except ImportError:
     has_oscserver = False
-    raise Exception
 
 import types
-from time import sleep
+import time
+import timeit
+
+import openbci.open_bci_v3 as bci
 
 
 # this method of reporting timeouts only works by convention
@@ -28,6 +30,9 @@ class MuseIO():
         self.signal = signal
         self.port = port
         self.udp_ip = '127.0.0.1'
+
+        if not has_oscserver:
+            raise Exception('ERROR: OSC not found')
 
         self.server = OSCServer((self.udp_ip, self.port))
         self.server.timeout = 0
@@ -80,9 +85,48 @@ class MuseIO():
     def start(self, freq=220):
         update_timing = 1.0/float(freq)
         while True:
-            sleep(update_timing)
+            time.sleep(update_timing)
             self.handle_request()
 
+
+class OpenBCIIO(object):
+    def __init__(self, port_name=None, baud=115200, signal=None, channels=None):
+        self.signal = signal
+
+        self.port_name = port_name
+        self.baud = baud
+
+        self.channels = channels
+
+        self.nb_samples_out = -1
+        self.tick = timeit.default_timer()
+        self.start_tick = self.tick
+
+        self.board = bci.OpenBCIBoard(port=self.port_name, scaled_output=False, log=True)
+        print("Board Instantiated")
+        self.board.ser.write('v')
+        print 'Sample Rate: ', self.board.getSampleRate()
+        time.sleep(5)
+
+    def start(self):
+        self.board.start_streaming(self.printData)
+
+    def printData(self, sample):
+        print "----------------"
+        print("%f" % (sample.id))
+        print sample.channel_data
+        print sample.aux_data
+        print "----------------"
+
+        new_tick = timeit.default_timer()
+        elapsed_time = new_tick - self.tick
+        current_samples_out = self.nb_samples_out
+        print "--- at t: ", (new_tick - self.start_tick), " ---"
+        print "elapsed_time: ", elapsed_time
+        print "nb_samples_out: ", current_samples_out - self.nb_samples_out
+        sampling_rate = (current_samples_out - self.nb_samples_out) / elapsed_time
+        print "sampling rate: ", sampling_rate
+        self.tick = new_tick
 
 if __name__ == "__main__":
     io_udp = MuseIO()
