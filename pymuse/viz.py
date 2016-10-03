@@ -36,24 +36,27 @@ class Viewer(object):
         #self.thread.start()
 
 
-class ViewerSignal(Viewer):
-    def __init__(self, signal, window_duration=5000.0, refresh_freq=10.0, signal_boundaries=None):
-        super(ViewerSignal, self).__init__(refresh_freq, signal_boundaries)
+class RawViewer(Viewer):
+    def __init__(self, signal=None, refresh_freq=10.0, signal_boundaries=None, label_channels=None, number_display=1000):
+        if signal_boundaries is None:
+            signal_boundaries = [-1000000, 10000000]
+        super(RawViewer, self).__init__(refresh_freq, signal_boundaries)
+
         self.signal = signal
-        self.window_duration = window_duration
-        self.number_of_channels = self.signal.number_of_channels
+        self.label_channels = label_channels
+        self.number_of_channels = len(self.label_channels)
+        self.number_display = number_display
 
         self.figure, self.axes = plt.subplots(self.number_of_channels, 1, sharex=True, figsize=(15, 10))
         self.axes_plot = []
         formatter = mticker.FuncFormatter(timeTicks)
 
-        self.signal.lock.acquire()
-        signal_time, signal_data = self.signal.get_window_ms(length_window=self.window_duration)
-        self.signal.lock.release()
+        times = np.linspace(0, 1, self.number_display)
+        fake_data = np.zeros(self.number_display)
 
-        for i, label in enumerate(self.signal.label_channels):
+        for i, label in enumerate(self.label_channels):
             self.axes[i].set_title(label)
-            ax_plot, = self.axes[i].plot(signal_time, signal_data[i, :])
+            ax_plot, = self.axes[i].plot(times, fake_data)
             self.axes_plot.append(ax_plot)
             self.axes[i].set_ylim([self.low, self.high])
             self.axes[i].xaxis.set_major_formatter(formatter)
@@ -61,26 +64,29 @@ class ViewerSignal(Viewer):
         self.figure.canvas.draw()
         plt.ion()
 
-    def refresh(self):
-        while True:
-            time_now = datetime.now()
-            if (time_now - self.last_refresh).total_seconds() > 1.0 / self.refresh_freq:
-                self.last_refresh = time_now
-                pass
-            else:
-                return
+    def refresh(self, data=None):
+        if data is not None:
+            signal_to_display = data
+        elif isinstance(self.signal, AutoQueue):
+            signal_to_display = self.signal.get()
+        else:
+            signal_to_display = self.signal
 
-            self.signal.lock.acquire()
-            signal_time, signal_data = self.signal.get_window_ms(length_window=self.window_duration)
-            self.signal.lock.release()
-            for i in range(self.number_of_channels):
-                self.axes_plot[i].set_ydata(signal_data[i, :])
-                times = np.linspace(signal_time[0], signal_time[-1], len(signal_time))
-                self.axes_plot[i].set_xdata(times)
-            self.axes[0].set_xlim(signal_time[0], signal_time[-1])
+        signal_to_display.lock.acquire()
+        signal_time = signal_to_display.time
+        signal_data = signal_to_display.data
+        signal_to_display.lock.release()
 
-            self.figure.canvas.draw()
-            self.figure.canvas.flush_events()
+        times = np.linspace(signal_time[0], signal_time[-1], self.number_display)
+
+        for i in range(self.number_of_channels):
+            y_signal = np.interp(times, signal_time, signal_data[i, :])
+            self.axes_plot[i].set_xdata(times)
+            self.axes_plot[i].set_ydata(y_signal)
+        self.axes[0].set_xlim(signal_time[0], signal_time[-1])
+
+        self.figure.canvas.draw()
+        self.figure.canvas.flush_events()
 
 
 class FFTViewer(Viewer):
@@ -89,7 +95,7 @@ class FFTViewer(Viewer):
         Plots a Single-Sided Amplitude Spectrum of y(t)
         """
         if signal_boundaries is None:
-            signal_boundaries = [0, 15]
+            signal_boundaries = [0, 250000]
         super(FFTViewer, self).__init__(refresh_freq, signal_boundaries)
         self.signal = signal
 
@@ -98,7 +104,6 @@ class FFTViewer(Viewer):
 
         self.figure, self.axes = plt.subplots(self.number_of_channels, 1, figsize=(15, 10))
         self.axes_plot = []
-        formatter = mticker.FuncFormatter(timeTicks)
 
         fake_freq, fake_data = range(100), np.zeros(100)
 
@@ -113,13 +118,6 @@ class FFTViewer(Viewer):
         plt.ion()
 
     def refresh(self, data=None):
-        time_now = datetime.now()
-        if (time_now - self.last_refresh).total_seconds() > 1.0 / self.refresh_freq:
-            self.last_refresh = time_now
-            pass
-        else:
-            return
-
         if data is not None:
             signal_to_display = data
         elif isinstance(self.signal, AutoQueue):

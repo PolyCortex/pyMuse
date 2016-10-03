@@ -88,5 +88,8 @@ class Analyzer(Thread):
 
             # refreshing viewers
             for process_name in self.list_viewer:
-                if self.list_process[process_name].data is not None:
-                    self.list_viewer[process_name].refresh(self.list_process[process_name].data)
+                if process_name == 'Raw':
+                    self.list_viewer[process_name].refresh(signal)
+                else:
+                    if self.list_process[process_name].data is not None:
+                        self.list_viewer[process_name].refresh(self.list_process[process_name].data)

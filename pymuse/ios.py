@@ -90,26 +90,36 @@ class MuseIO():
 
 
 class OpenBCIIO(object):
-    def __init__(self, port_name=None, baud=115200, signal=None, channels=None):
+    def __init__(self, port_name=None, baud=115200, index_channels=None, signal=None, channels=None):
         self.signal = signal
 
         self.port_name = port_name
         self.baud = baud
 
         self.channels = channels
+        self.index_channels = index_channels
+        if self.index_channels is None:
+            self.index_channels = range(0, 8)
 
         self.nb_samples_out = -1
         self.tick = timeit.default_timer()
         self.start_tick = self.tick
 
-        self.board = bci.OpenBCIBoard(port=self.port_name, scaled_output=False, log=True)
+        self.board = bci.OpenBCIBoard(port=self.port_name, scaled_output=False, log=True, filter_data=True)
         print("Board Instantiated")
         self.board.ser.write('v')
         print 'Sample Rate: ', self.board.getSampleRate()
         time.sleep(5)
 
     def start(self):
-        self.board.start_streaming(self.printData)
+        self.board.start_streaming(self.callback_rawdata)
+
+    def callback_rawdata(self, sample):
+        data = sample.channel_data
+        data_to_save = [data[ind] for ind in self.index_channels]
+        self.signal['eeg'].lock.acquire()
+        self.signal['eeg'].add_data(data_to_save)
+        self.signal['eeg'].lock.release()
 
     def printData(self, sample):
         print "----------------"

@@ -23,12 +23,12 @@ def main():
                         window_duration=1000,
                         analysis_frequency=24.0,
                         list_process=['FFT'],
-                        processes_to_visualize=['FFT'])
+                        processes_to_visualize=['Raw'])
 
     # Initializing the server
     try:
         #server = MuseIO(port=5001, signal=signals)
-        server = OpenBCIIO(port_name='/dev/tty.usbserial-DB00MF30', baud=115200, signal=signals)
+        server = OpenBCIIO(port_name='/dev/tty.usbserial-DB00MF30', baud=115200, signal=signals, index_channels=[0,1,2,3])
     except MuseIOError, err:
         print str(err)
         sys.exit(1)
