@@ -18,6 +18,7 @@ class Analyzer(Thread):
 
         self.init_time = datetime.now()
         self.last_refresh = datetime.now()
+        self.actual_refresh_frequency = analysis_frequency
 
         self.signal = signal
         self.window_duration = window_duration
@@ -73,12 +74,16 @@ class Analyzer(Thread):
 
         while True:
             time_now = datetime.now()
-            if (time_now - self.last_refresh).total_seconds() > 1.0 / self.analysis_frequency:
+            seconds_passed = (time_now - self.last_refresh).total_seconds()
+            if seconds_passed > 1.0 / self.analysis_frequency:
+                self.actual_refresh_frequency = 1.0 / seconds_passed
                 self.last_refresh = time_now
                 pass
             else:
                 time.sleep(0.001)
                 continue
+
+            print 'Pipeline frequency = ' + str(round(self.actual_refresh_frequency, 2)) + ' Hz'
 
             self.signal.lock.acquire()
             signal = self.signal.get_signal_window(length_window=self.window_duration)

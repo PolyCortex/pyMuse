@@ -2,6 +2,7 @@ from utils import Thread
 from signals import MultiChannelFrequencySignal
 import numpy as np
 import time
+from datetime import datetime
 
 
 class Process(Thread):
@@ -13,14 +14,20 @@ class Process(Thread):
         self.queue_out = queue_out
         self.data = None
 
+        self.duration_process = 0.0  # in seconds
+
     def process(self, data_in):
         return None
 
     def refresh(self):
         while True:
             data_in = self.queue_in.get()
+            time_now = datetime.now()
             self.data = self.process(data_in)
             self.queue_in.task_done()
+            self.duration_process = (datetime.now() - time_now).total_seconds()
+            freq = 1.0 / self.duration_process
+            #print 'Frequency process (' + self.name + ') = ' + str(round(freq, 2))
 
             # because we want that the speed of the pipeline is the same as the speed of the slowest process, we need to
             # wait for the next process to finish before adding a new item in the queue
@@ -48,4 +55,5 @@ class FFT(Process):
                                                label_channels=data_in.label_channels,
                                                data=data_out_fft,
                                                freq=x_frq)
+
         return data_out
