@@ -1,6 +1,7 @@
 from utils import Thread
 from signals import MultiChannelFrequencySignal
 import numpy as np
+import scipy.signal as sig
 import time
 from datetime import datetime
 
@@ -55,5 +56,55 @@ class FFT(Process):
                                                label_channels=data_in.label_channels,
                                                data=data_out_fft,
                                                freq=x_frq)
-
         return data_out
+
+class ButterFilter(Process):
+    def __init__(self, queue_in, queue_out):
+        super(ButterFilter, self).__init__(queue_in, queue_out)
+        self.name = 'butterfilter'
+
+    def getcoeffshigh(self, fcut, fs, order=5):
+        fnyq = fs / 2 # Get the Nyquist frequency from sampling frequency
+        high = fcut / fnyq # Normalize cutoff frequency by the Nyquist frequency
+        [b, a] = sig.butter(order, high, btype='high') # Get the filter coefficients
+        return b, a
+
+    def getcoeffslow(self, fcut, fs, order=5):
+        fnyq = fs / 2
+        low = fcut / fnyq
+        [b, a] = sig.butter(order, low, btype='low')
+        return b, a
+
+    def getcoeffsband(self, lowfcut, highfcut, fs, order=5):
+        fnyq = fs / 2
+        low = lowfcut / fnyq
+        high = highfcut / fnyq
+        [b, a] = sig.butter(order, [low, high], btype='band')
+        return b, a
+
+    def process(self, data_in, filterType, cutFrq, order=5):
+        k = np.arange(data_in.length)
+        fs = data_in.estimated_acquisition_freq
+        T = data_in.length / fs
+        frq = k / T
+        x_frq = frq[range(data_in.length / 2)]
+
+        if filterType=='high':
+            [b, a] = self.getcoeffshigh(cutFrq,fs,order)
+        elif filterType=='low':
+            [b, a] = self.getcoeffslow(cutFrq,fs,order)
+        else:
+            [b, a] = self.getcoeffsband(cutFrq,fs,order)
+
+        data_out_filter = sig.lfilter(b, a, data_in.data)
+
+        data_out = MultiChannelFrequencySignal(length=data_in.length,
+                                               estimated_acquisition_freq=data_in.estimated_acquisition_freq,
+                                               number_of_channels=data_in.number_of_channels,
+                                               label_channels=data_in.label_channels,
+                                               data=data_out_filter,
+                                               freq=x_frq)
+        return data_out
+
+
+
