@@ -22,8 +22,8 @@ def main():
     pipeline = Analyzer(signal=signals['eeg'],
                         window_duration=1000,
                         analysis_frequency=25.0,
-                        list_process=['FFT'],
-                        processes_to_visualize=[])
+                        list_process=['FFT', 'ButterFilter(filter_type=low,order=5,cutoff_frequency=0.25,acquisition_freq=220)'],
+                        processes_to_visualize=['FFT'])
 
     # Initializing the server
     try:

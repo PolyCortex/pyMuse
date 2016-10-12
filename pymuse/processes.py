@@ -1,7 +1,7 @@
 from utils import Thread
 from signals import MultiChannelFrequencySignal
 import numpy as np
-import scipy.signal as sig
+from scipy import signal
 import time
 from datetime import datetime
 
@@ -59,52 +59,58 @@ class FFT(Process):
         return data_out
 
 class ButterFilter(Process):
-    def __init__(self, queue_in, queue_out):
+    def __init__(self, queue_in, queue_out, param):
         super(ButterFilter, self).__init__(queue_in, queue_out)
         self.name = 'butterfilter'
+        if 'filter_type' in param:
+            self.filter_type = str(param['filter_type'])
+        else:
+            self.filter_type = 'low'
+        if 'order' in param:
+            self.order = int(param['order'])
+        else:
+            self.order = 5
+        if 'cutoff_frequency' in param:
+            self.cutoff_frequency = [np.float(f) for f in param['cutoff_frequency'].split('&')]  # not normalized
+        else:
+            self.cutoff_frequency = [35.0]
+        if 'acquisition_freq' in param:
+            self.acquisition_freq = float(param['acquisition_freq'])
+        else:
+            self.acquisition_freq = 220.0
+
+        if self.filter_type == 'high':
+            self.filter_param = self.getcoeffshigh(self.cutoff_frequency[0], self.acquisition_freq, self.order)
+        elif self.filter_type == 'low':
+            self.filter_param = self.getcoeffslow(self.cutoff_frequency[0], self.acquisition_freq, self.order)
+        else:
+            self.filter_param = self.getcoeffsband(self.cutoff_frequency[0], self.cutoff_frequency[1], self.acquisition_freq, self.order)
 
     def getcoeffshigh(self, fcut, fs, order=5):
         fnyq = fs / 2 # Get the Nyquist frequency from sampling frequency
         high = fcut / fnyq # Normalize cutoff frequency by the Nyquist frequency
-        [b, a] = sig.butter(order, high, btype='high') # Get the filter coefficients
+        [b, a] = signal.butter(order, high, btype='high') # Get the filter coefficients
         return b, a
 
     def getcoeffslow(self, fcut, fs, order=5):
         fnyq = fs / 2
         low = fcut / fnyq
-        [b, a] = sig.butter(order, low, btype='low')
+        [b, a] = signal.butter(order, low, btype='low')
         return b, a
 
     def getcoeffsband(self, lowfcut, highfcut, fs, order=5):
         fnyq = fs / 2
         low = lowfcut / fnyq
         high = highfcut / fnyq
-        [b, a] = sig.butter(order, [low, high], btype='band')
+        [b, a] = signal.butter(order, [low, high], btype='band')
         return b, a
 
-    def process(self, data_in, filterType, cutFrq, order=5):
-        k = np.arange(data_in.length)
-        fs = data_in.estimated_acquisition_freq
-        T = data_in.length / fs
-        frq = k / T
-        x_frq = frq[range(data_in.length / 2)]
-
-        if filterType=='high':
-            [b, a] = self.getcoeffshigh(cutFrq,fs,order)
-        elif filterType=='low':
-            [b, a] = self.getcoeffslow(cutFrq,fs,order)
-        else:
-            [b, a] = self.getcoeffsband(cutFrq,fs,order)
-
-        data_out_filter = sig.lfilter(b, a, data_in.data)
-
-        data_out = MultiChannelFrequencySignal(length=data_in.length,
-                                               estimated_acquisition_freq=data_in.estimated_acquisition_freq,
-                                               number_of_channels=data_in.number_of_channels,
-                                               label_channels=data_in.label_channels,
-                                               data=data_out_filter,
-                                               freq=x_frq)
-        return data_out
+    def process(self, data_in):
+        data_in.data = signal.lfilter(self.filter_param[1], self.filter_param[0], data_in.data)
+        data_in.data = data_in.data[:, :, -1]
+        data_in.data = signal.lfilter(self.filter_param[1], self.filter_param[0], data_in.data)
+        data_in.data = data_in.data[:, :, -1]
+        return data_in
 
 
 

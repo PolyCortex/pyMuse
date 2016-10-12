@@ -10,8 +10,6 @@ import types
 import time
 import timeit
 
-import openbci.open_bci_v3 as bci
-
 
 # this method of reporting timeouts only works by convention
 # that before calling handle_request() field .timed_out is
@@ -91,6 +89,8 @@ class MuseIO():
 
 class OpenBCIIO(object):
     def __init__(self, port_name=None, baud=115200, index_channels=None, signal=None, channels=None):
+        import openbci.open_bci_v3 as bci
+
         self.signal = signal
 
         self.port_name = port_name
