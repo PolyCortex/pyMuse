@@ -107,9 +107,9 @@ class ButterFilter(Process):
 
     def process(self, data_in):
         data_in.data = signal.lfilter(self.filter_param[1], self.filter_param[0], data_in.data)
-        data_in.data = data_in.data[:, :, -1]
+        data_in.data = data_in.data[::-1]
         data_in.data = signal.lfilter(self.filter_param[1], self.filter_param[0], data_in.data)
-        data_in.data = data_in.data[:, :, -1]
+        data_in.data = data_in.data[::-1]
         return data_in
 
 

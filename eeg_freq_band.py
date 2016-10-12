@@ -23,7 +23,7 @@ def main():
                         window_duration=1000,
                         analysis_frequency=25.0,
                         list_process=['FFT', 'ButterFilter(filter_type=low,order=5,cutoff_frequency=0.25,acquisition_freq=220)'],
-                        processes_to_visualize=['FFT'])
+                        processes_to_visualize=[])
 
     # Initializing the server
     try:
