@@ -1,45 +1,71 @@
-from kivy.app import App
-#kivy.require("1.9.1")
+import pygame
+import random
+import time
+from collections import deque
 
-from kivy.uix.label import Label
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.textinput import TextInput
+pygame.init()
 
-class GridAlpha(GridLayout):
-    def __init__(self, **kwargs):
-        super(GridAlpha, self).__init__(**kwargs)
+gameDisplay = pygame.display.set_mode((600, 600))
+pygame.display.set_caption('Poly_cortex_P300')
+pygame.display.update()
+clock = pygame.time.Clock()
 
-        def ColumnCounter(array = []):
+# Color
+white = (255, 255, 255)
+grey = (105, 105, 105)
+sys_font = pygame.font.SysFont("None", 100)
+dist = 85
+shift = 70
 
-            initialLenght = len(array)
-            counter = 1
-            print initialLenght
-            return;
+alphNumList = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                '0','1', '2', '3', '4', '5', '6', '7', '8', '9']
 
+timeFlashQ = deque([0, 0, 0, 0])
 
-        p300AlphaNumbers = ["A", "B","C", "D", "E", "F","G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
-                            "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+def randColumnOrRow():
+    columnOrRow = random.randrange(2)
+    columnOrRowNum = random.randrange(6)
+    return columnOrRow, columnOrRowNum
 
+p300Exit = False
 
-        ColumnCounter(p300AlphaNumbers)
+millisInit = int(round(time.time()*1000))
 
+while not p300Exit:
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            p300Exit = True
 
-        self.cols = 6
+    columnOrRow, columnOrRowNum = randColumnOrRow()
 
-        for elements in p300AlphaNumbers:
-            self.add_widget(Label(text=elements,font_size = '40sp'))
+    for i in range(6):
+        for j in range(6):
 
+            if columnOrRow == 0 and j == columnOrRowNum:
+                color = white
+            elif columnOrRow == 1 and i == columnOrRowNum:
+                color = white
+            else:
+                color = grey
 
+            rendered = sys_font.render(alphNumList[6*j + i], 0, color)
+            gameDisplay.blit(rendered, (dist*i + shift, dist*j + shift))
 
+    time.sleep(0.100)
 
-class SimpleKivy(App):
-    def build(self):
-        return GridAlpha()
+    # To find back which letter has been flashed at what time:
+    # The program seems to take about 5 ms to run one time the loop
+    timeFlashQ.append((int(round(time.time()*1000)) - millisInit, columnOrRow, columnOrRowNum))
+    timeFlashQ.popleft()
 
-if __name__ == "__main__":
-    SimpleKivy().run()
+    print(timeFlashQ)
 
+    pygame.display.update()
+
+pygame.quit()
+quit()
 
 
 
