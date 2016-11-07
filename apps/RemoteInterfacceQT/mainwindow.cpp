@@ -6,8 +6,9 @@
 #include <thread>
 #include <algorithm>
 #include <iostream>
+#include <QApplication>
 
-#define TestSize 50
+#define TestSize 1000
 bool stop = false;
 unsigned long startTime = 0;
 std::pair<QPushButton*,QPushButton*> p300Array[TestSize];
@@ -23,10 +24,9 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setMinimumSize(927, 581);
     this->setMaximumSize(927, 581);
 
-
+    ui->pushButton_2->setEnabled(false);
     ui->volume_widget->hide();
     ui->channel_widget->hide();
-
 }
 
 MainWindow::~MainWindow()
@@ -90,18 +90,28 @@ void MainWindow::p300Effect()
 {
     using namespace std::this_thread; // sleep_for, sleep_until
     using namespace std::chrono; // nanoseconds, system_clock, seconds
+//    TO SEND : array au complet au debut, & la fr/quence(ex 80 + 120)
+//    p300Array[0].first->toggled(true);
+//    p300Array[0].second->toggled(true);
+//    qApp->processEvents();
+//    sleep_for(seconds(1));
 
-    for (int i = 0; i < TestSize - 1  ;i++)
+    for (int i = 0; i < TestSize - 1 && stop == false  ;i++)
     {
+        // TOSEND: time a chaque je sais pas trop combien de tempset mon index.
         start();
         p300Array[i].first->toggled(true);
         p300Array[i].second->toggled(true);
-
-        for (;elapsedTime() < 300 && stop != false;)
-                 sleep_for(milliseconds(10));
+        qApp->processEvents();
+        sleep_for(milliseconds(80));
+//        for (;elapsedTime() < 300 && stop != false;)
+//                 sleep_for(milliseconds(10));
         p300Array[i].first->toggled(false);
         p300Array[i].second->toggled(false);
+        sleep_for(milliseconds(100));
     }
+//    p300Array[0].first->toggled(false);
+//    p300Array[0].second->toggled(false);
     stop = false;
 }
 
@@ -205,8 +215,12 @@ void MainWindow::on_power_toggled(bool checked)
 
 void MainWindow::on_pushButton_pressed()
 {
+    ui->pushButton->setEnabled(false);
+    ui->pushButton_2->setEnabled(true);
     randomArray();
     p300Effect();
+    ui->pushButton->setEnabled(true);
+    ui->pushButton_2->setEnabled(false);
 }
 
 void MainWindow::on_pushButton_2_pressed()
