@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Buttons/ChannelButtonBlack.png</file>
+        <file>Buttons/ChannelButtonWhite.png</file>
+        <file>Buttons/HomeButtonBlack.png</file>
+        <file>Buttons/HomeButtonWhite.png</file>
+        <file>Buttons/MinusButtonBlack.png</file>
+        <file>Buttons/MinusButtonWhite.png</file>
+        <file>Buttons/PlusButtonBlack.png</file>
+        <file>Buttons/PlusButtonWhite.png</file>
+        <file>Buttons/PowerButtonBlack.png</file>
+        <file>Buttons/PowerButtonWhite.png</file>
+        <file>Buttons/VolumeButtonBlack.png</file>
+        <file>Buttons/VolumeButtonWhite.png</file>
+        <file>Buttons/FavoriteButtonBlack.png</file>
+        <file>Buttons/FavoriteButtonWhite.png</file>
+        <file>Buttons/MuteButtonBlack.png</file>
+        <file>Buttons/MuteButtonWhite.png</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>927</width>
+    <height>581</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(197, 197, 197);</string>
+   </property>
+   <widget class="QWidget" name="home_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>581</width>
+      <height>571</height>
+     </rect>
+    </property>
+    <widget class="QPushButton" name="volume">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>10</y>
+       <width>267</width>
+       <height>267</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#volume {
+background-color: transparent;
+border-image: url(:/Buttons/VolumeButtonBlack.png);
+background: none;
+border: none;
+background-repeat: none;
+}
+#volume:pressed
+{
+border-image: url(:/Buttons/VolumeButtonWhite.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="channel">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>290</y>
+       <width>267</width>
+       <height>267</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#channel {
+background-color: transparent;
+border-image: url(:/Buttons/ChannelButtonBlack.png);
+background: none;
+border: none;
+background-repeat: none;
+}
+#channel:pressed
+{
+border-image: url(:/Buttons/ChannelButtonWhite.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="power">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>10</y>
+       <width>267</width>
+       <height>267</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#power {
+background-color: transparent;
+border-image: url(:/Buttons/PowerButtonBlack.png);
+background: none;
+border: none;
+background-repeat: none;
+}
+#power:pressed
+{
+border-image: url(:/Buttons/PowerButtonWhite.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="volume_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>581</width>
+      <height>571</height>
+     </rect>
+    </property>
+    <widget class="QPushButton" name="plus_volume">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>10</y>
+       <width>267</width>
+       <height>267</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#plus_volume {
+background-color: transparent;
+border-image: url(:/Buttons/PlusButtonBlack.png);
+background: none;
+border: none;
+background-repeat: none;
+}
+#plus_volume:pressed
+{
+border-image: url(:/Buttons/PlusButtonWhite.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="minus_volume">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>290</y>
+       <width>267</width>
+       <height>267</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#minus_volume {
+background-color: transparent;
+border-image: url(:/Buttons/MinusButtonBlack.png);
+background: none;
+border: none;
+background-repeat: none;
+}
+#minus_volume:pressed
+{
+border-image: url(:/Buttons/MinusButtonWhite.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="mute_volume">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>10</y>
+       <width>267</width>
+       <height>267</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#mute_volume {
+background-color: transparent;
+border-image: url(:/Buttons/MuteButtonBlack.png);
+background: none;
+border: none;
+background-repeat: none;
+}
+#mute_volume:pressed
+{
+border-image: url(:/Buttons/MuteButtonWhite.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="home">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>290</y>
+      <width>267</width>
+      <height>267</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">#home {
+background-color: transparent;
+border-image: url(:/Buttons/HomeButtonBlack.png);
+background: none;
+border: none;
+background-repeat: none;
+}
+#home:pressed
+{
+border-image: url(:/Buttons/HomeButtonWhite.png);
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QWidget" name="channel_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>580</width>
+      <height>571</height>
+     </rect>
+    </property>
+    <widget class="QPushButton" name="minus_channel">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>290</y>
+       <width>267</width>
+       <height>267</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#minus_channel {
+background-color: transparent;
+border-image: url(:/Buttons/MinusButtonBlack.png);
+background: none;
+border: none;
+background-repeat: none;
+}
+#minus_channel:pressed
+{
+border-image: url(:/Buttons/MinusButtonWhite.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="plus_channel">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>10</y>
+       <width>267</width>
+       <height>267</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#plus_channel {
+background-color: transparent;
+border-image: url(:/Buttons/PlusButtonBlack.png);
+background: none;
+border: none;
+background-repeat: none;
+}
+#plus_channel:pressed
+{
+border-image: url(:/Buttons/PlusButtonWhite.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="favorite_channel">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>10</y>
+       <width>267</width>
+       <height>267</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#favorite_channel {
+background-color: transparent;
+border-image: url(:/Buttons/FavoriteButtonBlack.png);
+background: none;
+border: none;
+background-repeat: none;
+}
+#favorite_channel:pressed
+{
+border-image: url(:/Buttons/FavoriteButtonWhite.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </widget>
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>10</y>
+      <width>16</width>
+      <height>551</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>30</y>
+      <width>291</width>
+      <height>521</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(148, 148, 148);</string>
+    </property>
+    <property name="title">
+     <string>Control</string>
+    </property>
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>240</y>
+       <width>131</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>start</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>240</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>stop</string>
+     </property>
+    </widget>
+   </widget>
+   <zorder>channel_widget</zorder>
+   <zorder>home_widget</zorder>
+   <zorder>volume_widget</zorder>
+   <zorder>home</zorder>
+   <zorder>line</zorder>
+   <zorder>groupBox</zorder>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
