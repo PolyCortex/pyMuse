@@ -49,6 +49,10 @@ private slots:
 
     void on_pushButton_2_pressed();
 
+    void on_frequency_Bspin_valueChanged();
+
+    void on_frequency_Aspin_valueChanged();
+
 private:
     Ui::MainWindow *ui;  
 };

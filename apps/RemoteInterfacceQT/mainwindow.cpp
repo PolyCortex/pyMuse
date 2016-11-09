@@ -12,6 +12,10 @@
 bool stop = false;
 unsigned long startTime = 0;
 std::pair<QPushButton*,QPushButton*> p300Array[TestSize];
+int arr[TestSize];
+bool arrcomplet = false;
+int BSLEEPTIME = 80;
+int ASLEEPTIME = 100;
 
 
 
@@ -27,6 +31,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton_2->setEnabled(false);
     ui->volume_widget->hide();
     ui->channel_widget->hide();
+
+    ui->frequency_Bspin->setValue(BSLEEPTIME);
+    ui->frequency_Aspin->setValue(ASLEEPTIME);
 }
 
 MainWindow::~MainWindow()
@@ -35,47 +42,51 @@ MainWindow::~MainWindow()
 }
 void MainWindow::randomArray()
 {
-    srand((unsigned)time(NULL));
-    int arr[TestSize];
-    for (int i = 0; i < TestSize - 1; i++)
-        arr[i] = 1 + rand() % 4;
-    if (!(ui->home_widget->isHidden()))
-        for (int j = 0; j < TestSize - 1;j++)
-        {
-            if (arr[j] == 1)
-                p300Array[j] = std::make_pair(ui->volume,ui->power);
-            else if (arr[j] == 2)
-                p300Array[j] = std::make_pair(ui->channel,ui->home);
-            else if (arr[j] == 3)
-                p300Array[j] = std::make_pair(ui->volume,ui->channel);
-            else if (arr[j] == 4)
-                p300Array[j] = std::make_pair(ui->power,ui->home);
-        }
-    else if (!(ui->volume_widget->isHidden()))
-        for (int j = 0; j < TestSize - 1;j++)
-        {
-            if (arr[j] == 1)
-                p300Array[j] = std::make_pair(ui->plus_volume,ui->mute_volume);
-            else if (arr[j] == 2)
-                p300Array[j] = std::make_pair(ui->minus_volume,ui->home);
-            else if (arr[j] == 3)
-                p300Array[j] = std::make_pair(ui->plus_volume,ui->minus_volume);
-            else if (arr[j] == 4)
-                p300Array[j] = std::make_pair(ui->mute_volume,ui->home);
-        }
-    else if (!(ui->channel_widget->isHidden()))
-        for (int j = 0; j < TestSize - 1;j++)
-        {
-            if (arr[j] == 1)
-                p300Array[j] = std::make_pair(ui->plus_channel,ui->favorite_channel);
-            else if (arr[j] == 2)
-                p300Array[j] = std::make_pair(ui->minus_channel,ui->home);
-            else if (arr[j] == 3)
-                p300Array[j] = std::make_pair(ui->plus_channel,ui->minus_channel);
-            else if (arr[j] == 4)
-                p300Array[j] = std::make_pair(ui->favorite_channel,ui->home);
-        }
+    if (!arrcomplet)
+    {
+        srand((unsigned)time(NULL));
 
+        for (int i = 0; i < TestSize - 1; i++)
+            arr[i] = 1 + rand() % 4;
+
+        arrcomplet = true;
+    }
+     if (!(ui->home_widget->isHidden()))
+        for (int j = 0; j < TestSize - 1;j++)
+        {
+             if (arr[j] == 1)
+                  p300Array[j] = std::make_pair(ui->volume,ui->power);
+             else if (arr[j] == 2)
+                  p300Array[j] = std::make_pair(ui->channel,ui->home);
+             else if (arr[j] == 3)
+                  p300Array[j] = std::make_pair(ui->volume,ui->channel);
+             else if (arr[j] == 4)
+                  p300Array[j] = std::make_pair(ui->power,ui->home);
+         }
+     else if (!(ui->volume_widget->isHidden()))
+         for (int j = 0; j < TestSize - 1;j++)
+         {
+             if (arr[j] == 1)
+                 p300Array[j] = std::make_pair(ui->plus_volume,ui->mute_volume);
+             else if (arr[j] == 2)
+                 p300Array[j] = std::make_pair(ui->minus_volume,ui->home);
+             else if (arr[j] == 3)
+                 p300Array[j] = std::make_pair(ui->plus_volume,ui->minus_volume);
+             else if (arr[j] == 4)
+                 p300Array[j] = std::make_pair(ui->mute_volume,ui->home);
+         }
+     else if (!(ui->channel_widget->isHidden()))
+         for (int j = 0; j < TestSize - 1;j++)
+         {
+             if (arr[j] == 1)
+                 p300Array[j] = std::make_pair(ui->plus_channel,ui->favorite_channel);
+             else if (arr[j] == 2)
+                 p300Array[j] = std::make_pair(ui->minus_channel,ui->home);
+             else if (arr[j] == 3)
+                 p300Array[j] = std::make_pair(ui->plus_channel,ui->minus_channel);
+             else if (arr[j] == 4)
+                 p300Array[j] = std::make_pair(ui->favorite_channel,ui->home);
+         }
 
 }
 
@@ -91,24 +102,20 @@ void MainWindow::p300Effect()
     using namespace std::this_thread; // sleep_for, sleep_until
     using namespace std::chrono; // nanoseconds, system_clock, seconds
 //    TO SEND : array au complet au debut, & la fr/quence(ex 80 + 120)
-//    p300Array[0].first->toggled(true);
-//    p300Array[0].second->toggled(true);
-//    qApp->processEvents();
-//    sleep_for(seconds(1));
 
     for (int i = 0; i < TestSize - 1 && stop == false  ;i++)
     {
-        // TOSEND: time a chaque je sais pas trop combien de tempset mon index.
+        // TOSEND: time a chaque je sais pas trop combien de temps et mon index (modulo nombre itteration).
         start();
         p300Array[i].first->toggled(true);
         p300Array[i].second->toggled(true);
         qApp->processEvents();
-        sleep_for(milliseconds(80));
+        sleep_for(milliseconds(BSLEEPTIME));
 //        for (;elapsedTime() < 300 && stop != false;)
 //                 sleep_for(milliseconds(10));
         p300Array[i].first->toggled(false);
         p300Array[i].second->toggled(false);
-        sleep_for(milliseconds(100));
+        sleep_for(milliseconds(ASLEEPTIME));
     }
 //    p300Array[0].first->toggled(false);
 //    p300Array[0].second->toggled(false);
@@ -226,4 +233,14 @@ void MainWindow::on_pushButton_pressed()
 void MainWindow::on_pushButton_2_pressed()
 {
     stop = true;
+}
+
+void MainWindow::on_frequency_Bspin_valueChanged()
+{
+    BSLEEPTIME = ui->frequency_Bspin->value();
+}
+
+void MainWindow::on_frequency_Aspin_valueChanged()
+{
+    ASLEEPTIME = ui->frequency_Aspin->value();
 }

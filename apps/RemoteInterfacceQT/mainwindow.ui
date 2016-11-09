@@ -346,7 +346,7 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>240</y>
+       <y>360</y>
        <width>131</width>
        <height>31</height>
       </rect>
@@ -359,7 +359,7 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
      <property name="geometry">
       <rect>
        <x>160</x>
-       <y>240</y>
+       <y>360</y>
        <width>121</width>
        <height>31</height>
       </rect>
@@ -368,63 +368,152 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
       <string>stop</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="checkBox">
+    <widget class="QRadioButton" name="freemode_radioButton">
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>60</y>
-       <width>111</width>
-       <height>21</height>
+       <y>80</y>
+       <width>171</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Free Mode</string>
+      <string>Free</string>
      </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
     </widget>
-    <widget class="QCheckBox" name="checkBox_2">
+    <widget class="QRadioButton" name="acquisition_radioButton">
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>90</y>
-       <width>54</width>
-       <height>16</height>
+       <y>120</y>
+       <width>181</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
       <string>Acquisition</string>
      </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
     </widget>
-    <widget class="QCheckBox" name="checkBox_3">
+    <widget class="QRadioButton" name="p300remote_radioButton">
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>120</y>
-       <width>54</width>
-       <height>16</height>
+       <y>160</y>
+       <width>191</width>
+       <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>Mode 2</string>
+      <string>P300 Remote</string>
      </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
     </widget>
-    <widget class="QSpinBox" name="spinBox">
+    <widget class="QSpinBox" name="frequency_Bspin">
      <property name="geometry">
       <rect>
-       <x>180</x>
-       <y>60</y>
-       <width>71</width>
+       <x>190</x>
+       <y>260</y>
+       <width>81</width>
        <height>22</height>
       </rect>
      </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+     <property name="singleStep">
+      <number>5</number>
+     </property>
     </widget>
-    <widget class="QSpinBox" name="spinBox_2">
+    <widget class="QSpinBox" name="frequency_Aspin">
      <property name="geometry">
       <rect>
-       <x>180</x>
-       <y>90</y>
-       <width>71</width>
+       <x>190</x>
+       <y>310</y>
+       <width>81</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+     <property name="singleStep">
+      <number>5</number>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>24</x>
+       <y>30</y>
+       <width>181</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>16</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+       <underline>true</underline>
+      </font>
+     </property>
+     <property name="text">
+      <string>Mode :</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="frequency_label">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>200</y>
+       <width>251</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>16</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+       <underline>true</underline>
+      </font>
+     </property>
+     <property name="text">
+      <string>Frequency :</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="frequency_Blabel">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>260</y>
+       <width>111</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Before Time :</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="frequency_Alabel">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>309</y>
+       <width>111</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>After Time :</string>
      </property>
     </widget>
    </widget>
@@ -439,4 +528,7 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>
