@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QSpinBox { border: 3px inset grey; } 
+QSpinBox::up-button { subcontrol-position: left; width: 32px; height: 35px;}
+QSpinBox::down-button { subcontrol-position: right; width: 30px; height: 35px;}</string>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <property name="styleSheet">
     <string notr="true">background-color: rgb(197, 197, 197);</string>
@@ -419,11 +424,26 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
     <widget class="QSpinBox" name="frequency_Bspin">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>260</y>
-       <width>81</width>
+       <x>150</x>
+       <y>270</y>
+       <width>131</width>
        <height>22</height>
       </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(148, 148, 148);</string>
+     </property>
+     <property name="wrapping">
+      <bool>false</bool>
+     </property>
+     <property name="buttonSymbols">
+      <enum>QAbstractSpinBox::PlusMinus</enum>
+     </property>
+     <property name="showGroupSeparator" stdset="0">
+      <bool>false</bool>
      </property>
      <property name="maximum">
       <number>1000</number>
@@ -435,11 +455,17 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
     <widget class="QSpinBox" name="frequency_Aspin">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>310</y>
-       <width>81</width>
+       <x>150</x>
+       <y>320</y>
+       <width>131</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="buttonSymbols">
+      <enum>QAbstractSpinBox::PlusMinus</enum>
      </property>
      <property name="maximum">
       <number>1000</number>
@@ -493,7 +519,7 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
     <widget class="QLabel" name="frequency_Blabel">
      <property name="geometry">
       <rect>
-       <x>40</x>
+       <x>30</x>
        <y>260</y>
        <width>111</width>
        <height>31</height>
@@ -506,7 +532,7 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
     <widget class="QLabel" name="frequency_Alabel">
      <property name="geometry">
       <rect>
-       <x>40</x>
+       <x>30</x>
        <y>309</y>
        <width>111</width>
        <height>31</height>
@@ -516,6 +542,17 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
       <string>After Time :</string>
      </property>
     </widget>
+    <zorder>pushButton</zorder>
+    <zorder>pushButton_2</zorder>
+    <zorder>freemode_radioButton</zorder>
+    <zorder>acquisition_radioButton</zorder>
+    <zorder>p300remote_radioButton</zorder>
+    <zorder>label</zorder>
+    <zorder>frequency_label</zorder>
+    <zorder>frequency_Blabel</zorder>
+    <zorder>frequency_Alabel</zorder>
+    <zorder>frequency_Bspin</zorder>
+    <zorder>frequency_Aspin</zorder>
    </widget>
    <zorder>channel_widget</zorder>
    <zorder>home_widget</zorder>
