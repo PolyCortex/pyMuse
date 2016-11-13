@@ -29,7 +29,6 @@ class Process(Thread):
             self.duration_process = (datetime.now() - time_now).total_seconds()
             freq = 1.0 / self.duration_process
             #print 'Frequency process (' + self.name + ') = ' + str(round(freq, 2))
-
             # because we want that the speed of the pipeline is the same as the speed of the slowest process, we need to
             # wait for the next process to finish before adding a new item in the queue
             self.queue_out.put(self.data, block=True, timeout=None)
@@ -57,6 +56,7 @@ class FFT(Process):
                                                data=data_out_fft,
                                                freq=x_frq)
         return data_out
+
 
 class ButterFilter(Process):
     def __init__(self, queue_in, queue_out, param):
@@ -111,6 +111,19 @@ class ButterFilter(Process):
         data_in.data = signal.lfilter(self.filter_param[1], self.filter_param[0], data_in.data)
         data_in.data = data_in.data[::-1]
         return data_in
+
+
+class WriteToFile(Process):
+    def __init__(self, queue_in, queue_out, param):
+        super(WriteToFile, self).__init__(queue_in, queue_out)
+        self.name = 'writetofile'
+        if 'file_name' in param:
+            self.file_name = str(param['file_name'])
+        else:
+            self.file_name = 'dataAcquisition.txt'
+
+    def process(self, data_in):
+        np.savetxt(self.file_name, data_in)
 
 
 
