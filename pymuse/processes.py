@@ -27,7 +27,10 @@ class Process(Thread):
             self.data = self.process(data_in)
             self.queue_in.task_done()
             self.duration_process = (datetime.now() - time_now).total_seconds()
-            freq = 1.0 / self.duration_process
+            if self.duration_process == 0.0:
+                freq = 0.0
+            else:
+                freq = 1.0 / self.duration_process
             #print 'Frequency process (' + self.name + ') = ' + str(round(freq, 2))
 
             # because we want that the speed of the pipeline is the same as the speed of the slowest process, we need to
