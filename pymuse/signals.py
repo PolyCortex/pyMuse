@@ -138,9 +138,9 @@ class MultiChannelFrequencySignal:
     def get_alpha_power(self):
         return self.get_frequency_power(8.0, 13.0)
 
-    def save_to_file(self, filename='dataAcquisition.csv'):
-        f_handle = open(filename,'a')
-        np.savetxt(f_handle,self.data,delimiter=',')
+    # def save_to_file(self, filename='dataAcquisition.csv'):
+    #     f_handle = open(filename,'a')
+    #     np.savetxt(f_handle,self.data,delimiter=',')
 
 
 
