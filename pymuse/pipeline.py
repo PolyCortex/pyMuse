@@ -7,7 +7,7 @@ import numpy as np
 
 
 class Analyzer(Thread):
-    def __init__(self, signal, window_duration, analysis_frequency=10.0, list_process=None, processes_to_visualize=None):
+    def __init__(self, signal, window_duration, analysis_frequency=10.0, list_process=None, list_params=None, processes_to_visualize=None):
         """
         Constructor of analyzer. This class aims at providing the support for creating analysis pipeline for EEG data.
         
@@ -29,6 +29,9 @@ class Analyzer(Thread):
         self.list_process = {}
         if self.list_process_string is None:
             raise ValueError("No process has been to the list.")
+        self.list_params = list_params
+        if len(self.list_params) != len(self.list_process):
+            raise ValueError("List of parameters must have the same length as the list of processes.")
 
         self.processes_to_visualize = processes_to_visualize
         self.list_viewer = {}
@@ -39,18 +42,6 @@ class Analyzer(Thread):
 
         self.prepare()
 
-    def parse_process(self, process_name):
-        bracket_open, bracket_close = process_name.find('('), process_name.find(')')
-        process_param = {}
-        if bracket_open != -1 and bracket_close != -1:
-            split_comma = process_name[bracket_open+1:bracket_close].split(',')
-            for spl in split_comma:
-                split_equal = spl.split('=')
-                process_param[split_equal[0]] = split_equal[1]
-            return process_name[:bracket_open], process_param
-        else:
-            return process_name, process_param
-
     def prepare(self):
         list_queue = [AutoQueue(maxsize=1) for _ in range(self.number_of_process)]
         list_queue.append(AutoQueue(maxsize=100, autodrop=True))  # last queue has no limit
@@ -58,13 +49,12 @@ class Analyzer(Thread):
         self.queue_out = list_queue[-1]
 
         for i, process_name in enumerate(self.list_process_string):
-            process_real_name, process_param = self.parse_process(process_name)
-            mod = __import__('pymuse.processes', fromlist=[process_real_name])
-            klass = getattr(mod, process_real_name)
-            if process_param:
-                self.list_process[process_real_name] = klass(list_queue[i], list_queue[i + 1], process_param)
+            mod = __import__('pymuse.processes', fromlist=[process_name])
+            klass = getattr(mod, process_name)
+            if self.list_params[i] is not None:
+                self.list_process[process_name] = klass(list_queue[i], list_queue[i + 1], self.list_params[i])
             else:
-                self.list_process[process_real_name] = klass(list_queue[i], list_queue[i + 1])
+                self.list_process[process_name] = klass(list_queue[i], list_queue[i + 1])
 
     def get_final_queue(self):
         return self.queue_out
