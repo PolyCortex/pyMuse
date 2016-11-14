@@ -30,7 +30,8 @@ class Analyzer(Thread):
         if self.list_process_string is None:
             raise ValueError("No process has been to the list.")
         self.list_params = list_params
-        if len(self.list_params) != len(self.list_process):
+        print
+        if len(self.list_params) != len(self.list_process_string):
             raise ValueError("List of parameters must have the same length as the list of processes.")
 
         self.processes_to_visualize = processes_to_visualize
@@ -40,9 +41,10 @@ class Analyzer(Thread):
         self.queue_in = None
         self.queue_out = None
 
-        self.prepare()
+        self.prepare_processes()
+        self.initialize_interface()
 
-    def prepare(self):
+    def prepare_processes(self):
         list_queue = [AutoQueue(maxsize=1) for _ in range(self.number_of_process)]
         list_queue.append(AutoQueue(maxsize=100, autodrop=True))  # last queue has no limit
         self.queue_in = list_queue[0]
@@ -55,6 +57,9 @@ class Analyzer(Thread):
                 self.list_process[process_name] = klass(list_queue[i], list_queue[i + 1], self.list_params[i])
             else:
                 self.list_process[process_name] = klass(list_queue[i], list_queue[i + 1])
+
+    def initialize_interface(self):
+        pass
 
     def get_final_queue(self):
         return self.queue_out

@@ -121,27 +121,27 @@ class WriteToFile(Process):
         super(WriteToFile, self).__init__(queue_in, queue_out)
         self.name = 'writetofile'
         self.last_save = datetime.now()
-        self.data = []
+        self.data_to_write = []
         if 'file_name' in param:
             self.file_name = str(param['file_name'])
         else:
             self.file_name = 'dataAcquisition.csv'
         if 'save_delay' in param:
-            self.save_delay = str(param['save_delay'])
+            self.save_delay = param['save_delay']
         else :
-            self.save_delay = 180
+            self.save_delay = 180.0
 
     def process(self, data_in):
         time_now = datetime.now()
         seconds_passed = (time_now - self.last_save).total_seconds()
         if seconds_passed > self.save_delay:
-            data_in.save_to_file(self.file_name)
             f_handle = open(self.file_name, 'a')
-            strheader = 'Channels: ' + str(data_in.number_of_channels) + ' // ' + data_in.label_channels
-            np.savetxt(f_handle, self.data, header=strheader, newline='\n', delimiter=',')
+            strheader = 'Channels: ' + str(data_in.number_of_channels) + ' // ' + ', '.join(data_in.label_channels)
+            for line in self.data_to_write:
+                np.savetxt(f_handle, line, header=strheader, newline='\n', delimiter=',')
             f_handle.close()
             self.last_save = datetime.now()
-            self.data = []
+            self.data_to_write = []
         else:
-            self.data.extend(data_in.data)
+            self.data_to_write.append(data_in.data)
         return data_in
