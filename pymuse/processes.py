@@ -120,13 +120,17 @@ class WriteToFile(Process):
     def __init__(self, queue_in, queue_out, param):
         super(WriteToFile, self).__init__(queue_in, queue_out)
         self.name = 'writetofile'
+        self.last_save = datetime.now()
         if 'file_name' in param:
             self.file_name = str(param['file_name'])
         else:
             self.file_name = 'dataAcquisition.txt'
 
     def process(self, data_in):
-        np.savetxt(self.file_name, data_in)
-
-
+        time_now = datetime.now()
+        seconds_passed = (time_now - self.last_save).total_seconds()
+        if seconds_passed > 180:
+            data_in.save_to_file(self.file_name)
+            self.last_save = datetime.now()
+        return data_in
 

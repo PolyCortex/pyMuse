@@ -19,6 +19,7 @@ class Analyzer(Thread):
         self.init_time = datetime.now()
         self.last_refresh = datetime.now()
         self.actual_refresh_frequency = analysis_frequency
+        # self.last_save = datetime.now()
 
         self.signal = signal
         self.window_duration = window_duration
