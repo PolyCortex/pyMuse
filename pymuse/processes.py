@@ -74,7 +74,7 @@ class ButterFilter(Process):
         else:
             self.order = 5
         if 'cutoff_frequency' in param:
-            self.cutoff_frequency = [np.float(f) for f in param['cutoff_frequency'].split('&')]  # not normalized
+            self.cutoff_frequency = [np.float(f) for f in param['cutoff_frequency'].split(',')]  # not normalized
         else:
             self.cutoff_frequency = [35.0]
         if 'acquisition_freq' in param:
