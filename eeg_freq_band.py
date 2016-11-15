@@ -13,27 +13,39 @@ def main():
 
     # EEG signal
     signal_eeg = MultiChannelSignal(length=2000,
-                                    estimated_acquisition_freq=220.0,
+                                    estimated_acquisition_freq=250.0,
                                     label_channels=['Left ear', 'Left forehead', 'Right forehead', 'Right ear'])
 
     signals['eeg'] = signal_eeg
 
     # Initializing the analyzer
-    pipeline = Analyzer(signal=signals['eeg'],
-                        window_duration=1000,
-                        analysis_frequency=20.0,
-                        list_process=['ButterFilter',
+    """
+    list_process=['ButterFilter',
                                       'WriteToFile',
                                       'FFT'],
-                        list_params=[{'filter_type': 'band', 'order': 5, 'cutoff_frequency': '0.25,35', 'acquisition_freq': 220.0},
+                        list_params=[{'filter_type': 'bandpass', 'order': 1, 'cutoff_frequency': '0.25,35', 'acquisition_freq': 220.0},
                                      {'file_name': '/Users/benjamindeleener/data/test_muse/test.csv', 'save_delay': 180.0},
                                      None],
-                        processes_to_visualize=['FFT'])
+
+                                     {'filter_type': 'highpass', 'order': 1, 'cutoff_frequency': '0.5', 'acquisition_freq': 250.0},
+    """
+    pipeline = Analyzer(signal=signals['eeg'],
+                        window_duration=20000,
+                        analysis_frequency=10.0,
+                        list_process=['ButterFilter',
+                                      'ButterFilter',
+                                      'ButterFilter',
+                                      'FFT'],
+                        list_params=[{'filter_type': 'bandstop', 'order': 1, 'cutoff_frequency': '55.0,65.0', 'acquisition_freq': 250.0},
+                                     {'filter_type': 'lowpass', 'order': 1, 'cutoff_frequency': '35.0', 'acquisition_freq': 250.0},
+                                     {'filter_type': 'highpass', 'order': 1, 'cutoff_frequency': '3.0', 'acquisition_freq': 250.0},
+                                     None],
+                        processes_to_visualize=[3])
 
     # Initializing the server
     try:
-        server = MuseIO(port=5001, signal=signals)
-        #server = OpenBCIIO(port_name='/dev/tty.usbserial-DB00MF30', baud=115200, signal=signals, index_channels=[0,1,2,3])
+        #server = MuseIO(port=5001, signal=signals)
+        server = OpenBCIIO(port_name='/dev/tty.usbserial-DB00MF30', baud=115200, signal=signals, index_channels=[0, 1, 2, 3])
     except MuseIOError, err:
         print str(err)
         sys.exit(1)
