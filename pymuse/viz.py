@@ -95,7 +95,7 @@ class FFTViewer(Viewer):
         Plots a Single-Sided Amplitude Spectrum of y(t)
         """
         if signal_boundaries is None:
-            signal_boundaries = [0, 250000]
+            signal_boundaries = [0, 10000000]
         super(FFTViewer, self).__init__(refresh_freq, signal_boundaries)
         self.signal = signal
 

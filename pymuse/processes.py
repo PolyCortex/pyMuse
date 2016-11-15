@@ -136,7 +136,7 @@ class WriteToFile(Process):
         seconds_passed = (time_now - self.last_save).total_seconds()
         if seconds_passed > self.save_delay:
             f_handle = open(self.file_name, 'a')
-            strheader = 'Channels: ' + str(data_in.number_of_channels) + ' // ' + ', '.join(data_in.label_channels)
+            strheader = 'Channels: ' + str(data_in.number_of_channels) + ', ' + ', '.join(data_in.label_channels) + ', event, ' + data_in.related_event
             for line in self.data_to_write:
                 np.savetxt(f_handle, line, header=strheader, newline='\n', delimiter=',')
             f_handle.close()

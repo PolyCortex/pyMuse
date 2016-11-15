@@ -21,14 +21,14 @@ def main():
     # Initializing the analyzer
     pipeline = Analyzer(signal=signals['eeg'],
                         window_duration=1000,
-                        analysis_frequency=5.0,
+                        analysis_frequency=20.0,
                         list_process=['ButterFilter',
                                       'WriteToFile',
                                       'FFT'],
                         list_params=[{'filter_type': 'band', 'order': 5, 'cutoff_frequency': '0.25,35', 'acquisition_freq': 220.0},
-                                     {'file_name': '/Users/benjamindeleener/data/test_muse/test.csv', 'save_delay': 5.0},
+                                     {'file_name': '/Users/benjamindeleener/data/test_muse/test.csv', 'save_delay': 180.0},
                                      None],
-                        processes_to_visualize=[])
+                        processes_to_visualize=['FFT'])
 
     # Initializing the server
     try:
