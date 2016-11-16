@@ -58,3 +58,4 @@ docs/_build/
 # PyBuilder
 target/
 *.user
+apps/InterfaceP300.py
