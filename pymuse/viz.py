@@ -39,7 +39,8 @@ class Viewer(object):
 class RawViewer(Viewer):
     def __init__(self, signal=None, refresh_freq=10.0, signal_boundaries=None, label_channels=None, number_display=1000):
         if signal_boundaries is None:
-            signal_boundaries = [-1000000, 10000000]
+            signal_boundaries = [600000, 800000]
+            #signal_boundaries = [700, 1000]
         super(RawViewer, self).__init__(refresh_freq, signal_boundaries)
 
         self.signal = signal
@@ -80,13 +81,21 @@ class RawViewer(Viewer):
         times = np.linspace(signal_time[0], signal_time[-1], self.number_display)
 
         for i in range(self.number_of_channels):
-            y_signal = np.interp(times, signal_time, signal_data[i, :])
-            self.axes_plot[i].set_xdata(times)
-            self.axes_plot[i].set_ydata(y_signal)
+            #y_signal = np.interp(times, signal_time, signal_data[i, :])
+            #self.axes_plot[i].set_xdata(times)
+            #self.axes_plot[i].set_ydata(y_signal)
+            self.axes[i].set_ylim([np.mean(signal_data[i, 100:]) - 5.0 * np.std(signal_data[i, 100:]), np.mean(signal_data[i, 100:]) + 5.0 * np.std(signal_data[i, 100:])])
+            #self.axes[i].set_ylim([np.min(signal_data[i, :]), np.max(signal_data[i, :])])
+            self.axes_plot[i].set_data(signal_time, signal_data[i, :])
         self.axes[0].set_xlim(signal_time[0], signal_time[-1])
 
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
+
+
+class ButterFilterViewer(RawViewer):
+    def __init__(self, signal=None, refresh_freq=10.0, signal_boundaries=None, label_channels=None, number_display=1000):
+        super(ButterFilterViewer, self).__init__(signal, refresh_freq, signal_boundaries, label_channels, number_display)
 
 
 class FFTViewer(Viewer):
@@ -95,7 +104,7 @@ class FFTViewer(Viewer):
         Plots a Single-Sided Amplitude Spectrum of y(t)
         """
         if signal_boundaries is None:
-            signal_boundaries = [0, 250000]
+            signal_boundaries = [0, 10000000]
         super(FFTViewer, self).__init__(refresh_freq, signal_boundaries)
         self.signal = signal
 
@@ -128,12 +137,13 @@ class FFTViewer(Viewer):
         signal_to_display.lock.acquire()
         signal_freq = signal_to_display.freq
         signal_data = abs(signal_to_display.data)**2
+        signal_acq_freq = signal_to_display.estimated_acq_freq
         signal_to_display.lock.release()
-        x_freq = range(0, 100)
 
         for i in range(self.number_of_channels):
-            y_signal = np.interp(x_freq, signal_freq, signal_data[i, :])
-            self.axes_plot[i].set_data(x_freq, y_signal)
+            self.axes_plot[i].set_data(signal_freq, signal_data[i, :])
+            self.axes[i].set_xlim(0.0, signal_acq_freq / 2.0)
+            self.axes[i].set_ylim(0.0, np.max(signal_data[i, :]))
             #self.axes_plot[i].set_data(signal_freq, signal_data[i, :])
             #self.axes[i].set_xlim(signal_freq[0], signal_freq[-1])
             #self.axes[i].draw_artist(self.axes_plot[i])

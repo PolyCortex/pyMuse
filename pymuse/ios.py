@@ -9,6 +9,7 @@ except ImportError:
 import types
 import time
 import timeit
+from datetime import datetime
 
 
 # this method of reporting timeouts only works by convention
@@ -83,8 +84,18 @@ class MuseIO():
     def start(self, freq=220):
         update_timing = 1.0/float(freq)
         while True:
-            time.sleep(update_timing)
-            self.handle_request()
+            try:
+                time.sleep(update_timing)
+                self.handle_request()
+            except KeyboardInterrupt:
+                import sys
+                print('KeyboardInterrupt on line {}'.format(sys.exc_info()[-1].tb_lineno))
+                sys.exit(2)
+            except Exception as e:
+                import sys
+                print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
+                print(str(e))
+                sys.exit(2)
 
 
 class OpenBCIIO(object):
@@ -108,18 +119,28 @@ class OpenBCIIO(object):
         self.board = bci.OpenBCIBoard(port=self.port_name, scaled_output=False, log=True, filter_data=True)
         print("Board Instantiated")
         self.board.ser.write('v')
-        print 'Sample Rate: ', self.board.getSampleRate()
+        self.sample_rate = float(self.board.getSampleRate())
+        print 'Sample Rate: ', self.sample_rate
         time.sleep(5)
+
+        self.current_sample_id = 0
+        self.init_time = datetime.now()
 
     def start(self):
         self.board.start_streaming(self.callback_rawdata)
 
     def callback_rawdata(self, sample):
+
         data = sample.channel_data
         data_to_save = [data[ind] for ind in self.index_channels]
         self.signal['eeg'].lock.acquire()
-        self.signal['eeg'].add_data(data_to_save)
+        self.signal['eeg'].id = sample.id
+        self.signal['eeg'].add_data(data_to_save, add_time=False)
+        self.signal['eeg'].add_time((self.current_sample_id + sample.id) / self.sample_rate)
         self.signal['eeg'].lock.release()
+        if sample.id == 255:
+            self.current_sample_id += 256
+        #print self.current_sample_id + sample.id, (self.current_sample_id + sample.id) / self.sample_rate
 
     def printData(self, sample):
         print "----------------"

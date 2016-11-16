@@ -16,16 +16,21 @@ def find_closest(A, target):
 
 class Signal(object):
     def __init__(self, length, estimated_acquisition_freq):
+        self.id = 0
         self.length = length
         self.estimated_acquisition_freq = estimated_acquisition_freq
         self.time = np.linspace(-float(self.length) / self.estimated_acquisition_freq + 1.0 / self.estimated_acquisition_freq, 0.0, self.length)
         self.init_time = datetime.now()
         self.lock = multiprocessing.Lock()
 
-    def add_time(self):
-        diff = datetime.now() - self.init_time
+        self.related_event = '0'
+
+    def add_time(self, diff=None):
+        if diff is None:
+            diff = datetime.now() - self.init_time
+            diff = diff.total_seconds()
         self.time = np.roll(self.time, -1)
-        self.time[-1] = float(diff.total_seconds() * 1000)  # in milliseconds
+        self.time[-1] = float(diff * 1000.0)  # in milliseconds
 
     def compute_real_acquisition_frequency(self, window=None):
         if not window or window > self.length:
@@ -59,14 +64,15 @@ class MultiChannelSignal(Signal):
         if signal_time is not None:
             self.time = signal_time
 
-    def add_data(self, s):
+    def add_data(self, s, add_time=True):
         """
         Function for adding a new element in the ndarray. This function calls the inherited function add_time.
         :param s: list of number, length of list must be equal to the number of channels
         :return: nothing
         """
         if len(s) == self.number_of_channels:
-            self.add_time()
+            if add_time:
+                self.add_time()
             self.data = np.roll(self.data, -1, axis=1)
             self.data[:, -1] = s
         else:
@@ -135,5 +141,24 @@ class MultiChannelFrequencySignal:
             power[i] = np.sum(target_values) / abs((freq[idx_boundary[1]] - freq[idx_boundary[0]]))
         return power
 
-    def get_alpha_power(self):
-        return self.get_frequency_power(8.0, 13.0)
+    def get_band_power(self, band='alpha', average=True):
+        band_frequencies = {'delta': [1.0, 4.0],
+                            'theta': [4.0, 8.0],
+                            'alpha': [8.0, 13.0],
+                            'alpha1': [8.0, 10.0],
+                            'alpha2': [10.0, 13.0],
+                            'beta': [13.0, 30.0],
+                            'beta1': [13.0, 18.0],
+                            'beta2': [18.0, 30.0],
+                            'gamma': [30.0, 50.0],
+                            'gamma1': [30.0, 41.0],
+                            'gamma2': [41.0, 50.0]}
+
+        band_powers = self.get_frequency_power(band_frequencies[band][0], band_frequencies[band][1])
+        if average:
+            return np.mean(band_powers)
+        else:
+            return band_powers
+
+
+
