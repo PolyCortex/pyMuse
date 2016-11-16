@@ -20,9 +20,8 @@
 #define SERVER "127.0.0.1" //ip adress of udp server
 #define PORT 8888
 #define BUFLEN 512
-SOCKET sock = INVALID_SOCKET;
 struct sockaddr_in server, si_other;
-int s, recv_len;
+SOCKET s;
 int slen;
 char buf[BUFLEN];
 WSADATA wsa;
@@ -58,23 +57,6 @@ MainWindow::MainWindow(QWidget *parent) :
     if (WSAStartup(MAKEWORD(2,2), &wsa) != 0)
     {
         printf("Failed. Error Code : %d", WSAGetLastError());
-        exit(EXIT_FAILURE);
-    }
-
-    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)
-    {
-        printf("Could not create socket : %d", WSAGetLastError());
-        WSACleanup();
-        exit(EXIT_FAILURE);
-    }
-
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons(PORT);
-
-    if (bind(sock, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR)
-    {
-        printf("Bind failed");
         exit(EXIT_FAILURE);
     }
 
@@ -157,13 +139,10 @@ void MainWindow::p300Effect()
     using namespace std::chrono; // nanoseconds, system_clock, seconds
 
     //    TO SEND : array au complet au debut, & la fr/quence(ex 80 + 120)
-    //char *messageDebut = " " + startTime + ' ' + ASLEEPTIME + ' ' + BSLEEPTIME;
 
-    //messageDebut = startTime + ' ' + ASLEEPTIME + ' ' + BSLEEPTIME;
-    //printf("message :  %d", messageDebut);
-    //char messageDebut[BUFLEN] = "alskdjas";
-    std::string messageDebut = " " + startTime.toString() + " " + ASLEEPTIME.toString() + " " + BSLEEPTIME.toString();
-    if (sendto(s, messageDebut, strlen(messageDebut), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+    std::string messageDebut = std::to_string(startTime) + " " + std::to_string(BSLEEPTIME)+ " " + std::to_string(ASLEEPTIME);
+    const char* messageDebut_char = messageDebut.c_str();
+    if (sendto(s, messageDebut_char, int(strlen(messageDebut_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
     {
         printf("sendto() failed with error code : %d", WSAGetLastError());
         exit(EXIT_FAILURE);
@@ -171,30 +150,28 @@ void MainWindow::p300Effect()
 
     for (int i = 0; i < TestSize - 1 && stop == false  ;i++)
     {
+        start();
         // TOSEND: time a chaque je sais pas trop combien de temps et mon index (modulo nombre itteration).
-        if (100%200 == 0) //a tous les 200, on envoie un message
+        if (i%50 == 0) //a tous les 50, on envoie un message
         {
-            char messageTime[BUFLEN] = "hey";
-            if (sendto(s, messageTime, strlen(messageTime), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+            std::string messageDebut = std::to_string(startTime) + " " + std::to_string(i);
+            const char* messageDebut_char = messageDebut.c_str();
+            if (sendto(s, messageDebut_char, int(strlen(messageDebut_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
             {
                 printf("sendto() failed with error code : %d", WSAGetLastError());
                 exit(EXIT_FAILURE);
             }
         }
 
-        start();
+
         p300Array[i].first->toggled(true);
         p300Array[i].second->toggled(true);
         qApp->processEvents();
         sleep_for(milliseconds(BSLEEPTIME));
-        //        for (;elapsedTime() < 300 && stop != false;)
-        //                 sleep_for(milliseconds(10));
         p300Array[i].first->toggled(false);
         p300Array[i].second->toggled(false);
         sleep_for(milliseconds(ASLEEPTIME));
     }
-    //    p300Array[0].first->toggled(false);
-    //    p300Array[0].second->toggled(false);
     stop = false;
 }
 

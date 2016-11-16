@@ -59,3 +59,4 @@ docs/_build/
 target/
 *.user
 apps/InterfaceP300.py
+*.user
