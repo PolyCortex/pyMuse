@@ -102,6 +102,9 @@ class Analyzer(Thread):
                 signal = self.signal.get_signal_window(length_window=self.window_duration)
                 self.signal.lock.release()
 
+
+                # signal.event_related = XX
+
                 self.queue_in.put(signal, block=True, timeout=None)
 
                 # refreshing viewers

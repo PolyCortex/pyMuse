@@ -30,15 +30,15 @@ def main():
                                      {'filter_type': 'highpass', 'order': 1, 'cutoff_frequency': '0.5', 'acquisition_freq': 250.0},
     """
     pipeline = Analyzer(signal=signals['eeg'],
-                        window_duration=20000,
-                        analysis_frequency=10.0,
+                        window_duration=1000,
+                        analysis_frequency=20.0,
                         list_process=['ButterFilter',
                                       'ButterFilter',
                                       'ButterFilter',
                                       'FFT'],
-                        list_params=[{'filter_type': 'bandstop', 'order': 1, 'cutoff_frequency': '55.0,65.0', 'acquisition_freq': 250.0},
-                                     {'filter_type': 'lowpass', 'order': 1, 'cutoff_frequency': '35.0', 'acquisition_freq': 250.0},
-                                     {'filter_type': 'highpass', 'order': 1, 'cutoff_frequency': '3.0', 'acquisition_freq': 250.0},
+                        list_params=[{'filter_type': 'bandstop', 'order': 3, 'cutoff_frequency': '40.0,80.0', 'acquisition_freq': 250.0},
+                                     {'filter_type': 'lowpass', 'order': 2, 'cutoff_frequency': '35.0', 'acquisition_freq': 250.0},
+                                     {'filter_type': 'highpass', 'order': 2, 'cutoff_frequency': '1.0', 'acquisition_freq': 250.0},
                                      None],
                         processes_to_visualize=[3])
 
