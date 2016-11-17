@@ -152,7 +152,7 @@ void MainWindow::p300Effect()
     {
         start();
         // TOSEND: time a chaque je sais pas trop combien de temps et mon index (modulo nombre itteration).
-        if (i%50 == 0) //a tous les 50, on envoie un message
+        if (i%5 == 0) //a tous les 50, on envoie un message
         {
             std::string messageDebut = std::to_string(startTime) + " " + std::to_string(i);
             const char* messageDebut_char = messageDebut.c_str();
