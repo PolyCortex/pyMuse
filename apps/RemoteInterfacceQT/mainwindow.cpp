@@ -82,7 +82,7 @@ void MainWindow::randomArray()
     {
         srand((unsigned)time(NULL));
 
-        for (int i = 0; i < TestSize - 1; i++)
+        for (int i = 0; i < TestSize; i++)
             arr[i] = 1 + rand() % 4;
 
         arrcomplet = true;
@@ -139,7 +139,7 @@ void MainWindow::p300Effect()
     using namespace std::chrono; // nanoseconds, system_clock, seconds
 
     //    TO SEND : array au complet au debut, & la fr/quence(ex 80 + 120)
-    for (int i = 0; i < TestSize - 1; i++)
+    for (int i = 0; i < TestSize; i++)
     {
         std::string messageDebut = std::to_string(arr[i]);
         const char* messageDebut_char = messageDebut.c_str();
