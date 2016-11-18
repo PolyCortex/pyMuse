@@ -19,7 +19,7 @@
 
 #define SERVER "127.0.0.1" //ip adress of udp server
 #define PORT 8888
-#define BUFLEN 512
+#define BUFLEN 16
 struct sockaddr_in server, si_other;
 SOCKET s;
 int slen;
@@ -139,10 +139,28 @@ void MainWindow::p300Effect()
     using namespace std::chrono; // nanoseconds, system_clock, seconds
 
     //    TO SEND : array au complet au debut, & la fr/quence(ex 80 + 120)
-
-    std::string messageDebut = std::to_string(startTime) + " " + std::to_string(BSLEEPTIME)+ " " + std::to_string(ASLEEPTIME);
+    for (int i = 0; i < TestSize - 1; i++)
+    {
+        std::string messageDebut = std::to_string(arr[i]);
+        const char* messageDebut_char = messageDebut.c_str();
+        if (sendto(s, messageDebut_char, int(strlen(messageDebut_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+        {
+            printf("sendto() failed with error code : %d", WSAGetLastError());
+            exit(EXIT_FAILURE);
+        }
+    }
+    std::string messageDebut = "DONE";
     const char* messageDebut_char = messageDebut.c_str();
     if (sendto(s, messageDebut_char, int(strlen(messageDebut_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+    {
+        printf("sendto() failed with error code : %d", WSAGetLastError());
+        exit(EXIT_FAILURE);
+    }
+
+
+    std::string finArray = std::to_string(startTime) + " " + std::to_string(BSLEEPTIME)+ " " + std::to_string(ASLEEPTIME);
+    const char* finArray_char = finArray.c_str();
+    if (sendto(s, finArray_char, int(strlen(finArray_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
     {
         printf("sendto() failed with error code : %d", WSAGetLastError());
         exit(EXIT_FAILURE);
