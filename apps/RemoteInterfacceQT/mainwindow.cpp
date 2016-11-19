@@ -158,9 +158,23 @@ void MainWindow::p300Effect()
     }
 
 
-    std::string finArray = std::to_string(startTime) + " " + std::to_string(BSLEEPTIME)+ " " + std::to_string(ASLEEPTIME);
-    const char* finArray_char = finArray.c_str();
-    if (sendto(s, finArray_char, int(strlen(finArray_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+    std::string finArrayS = std::to_string(startTime);
+    const char* finArrayS_char = finArrayS.c_str();
+    if (sendto(s, finArrayS_char, int(strlen(finArrayS_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+    {
+        printf("sendto() failed with error code : %d", WSAGetLastError());
+        exit(EXIT_FAILURE);
+    }
+    std::string finArrayB = std::to_string(BSLEEPTIME);
+    const char* finArrayB_char = finArrayB.c_str();
+    if (sendto(s, finArrayB_char, int(strlen(finArrayB_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+    {
+        printf("sendto() failed with error code : %d", WSAGetLastError());
+        exit(EXIT_FAILURE);
+    }
+    std::string finArrayA = std::to_string(ASLEEPTIME);
+    const char* finArrayA_char = finArrayA.c_str();
+    if (sendto(s, finArrayA_char, int(strlen(finArrayA_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
     {
         printf("sendto() failed with error code : %d", WSAGetLastError());
         exit(EXIT_FAILURE);
@@ -189,6 +203,13 @@ void MainWindow::p300Effect()
         p300Array[i].first->toggled(false);
         p300Array[i].second->toggled(false);
         sleep_for(milliseconds(ASLEEPTIME));
+    }
+    std::string messageENDED = "ENDED";
+    const char* messageENDED_char = messageENDED.c_str();
+    if (sendto(s, messageENDED_char, int(strlen(messageENDED_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+    {
+        printf("sendto() failed with error code : %d", WSAGetLastError());
+        exit(EXIT_FAILURE);
     }
     stop = false;
 }

@@ -45,7 +45,8 @@ def main():
     # Initializing the server
     try:
         #server = MuseIO(port=5001, signal=signals)
-        server = OpenBCIIO(port_name='/dev/tty.usbserial-DB00MF30', baud=115200, signal=signals, index_channels=[0, 1, 2, 3])
+        #'/dev/tty.usbserial-DB00MF30'
+        server = OpenBCIIO(port_name='COM3', baud=115200, signal=signals, index_channels=[0, 1, 2, 3])
     except MuseIOError, err:
         print str(err)
         sys.exit(1)
