@@ -98,6 +98,105 @@ class MuseIO():
                 sys.exit(2)
 
 
+class UDPIO(object):
+    def __init__(self, freq=220.0, udp_ip='127.0.0.1', udp_port=5005, index_channels=None, signal=None, channels=None):
+        self.signal = signal
+
+        self.udp_ip = udp_ip
+        self.udp_port = udp_port
+
+        self.channels = channels
+        self.index_channels = index_channels
+        if self.index_channels is None:
+            self.index_channels = range(0, 4)
+
+    def start(self):
+        import socket
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind((self.udp_ip, self.udp_port))
+        while True:
+            data, addr = sock.recvfrom(512)  # buffer size is 1024 bytes
+            voltage_values = [float(d) for d in data.split(', ')]
+
+            self.signal['eeg'].lock.acquire()
+            self.signal['eeg'].add_data(voltage_values)
+            self.signal['eeg'].lock.release()
+
+
+
+"""
+class RPiMCP300XIO(object):
+    def __init__(self, signalclk=None, cs=None, miso=None, mosi=None, spi=None, gpio=None):
+        '''Initialize MAX31855 device with software SPI on the specified CLK,
+        CS, and DO pins.  Alternatively can specify hardware SPI by sending an
+        Adafruit_GPIO.SPI.SpiDev device in the spi parameter.
+        '''
+        import Adafruit_GPIO as GPIO
+        import Adafruit_GPIO.SPI as SPI
+
+        self.signal = signal
+
+        self._spi = None
+        # Handle hardware SPI
+        if spi is not None:
+            self._spi = spi
+        elif clk is not None and cs is not None and miso is not None and mosi is not None:
+            # Default to platform GPIO if not provided.
+            if gpio is None:
+                gpio = GPIO.get_platform_gpio()
+            self._spi = SPI.BitBang(gpio, clk, mosi, miso, cs)
+        else:
+            raise ValueError(
+                'Must specify either spi for for hardware SPI or clk, cs, miso, and mosi for softwrare SPI!')
+        self._spi.set_clock_hz(1000000)
+        self._spi.set_mode(0)
+        self._spi.set_bit_order(SPI.MSBFIRST)
+
+    def read_adc(self, adc_number):
+        '''Read the current value of the specified ADC channel (0-7).  The values
+        can range from 0 to 1023 (10-bits).
+        '''
+        assert 0 <= adc_number <= 7, 'ADC number must be a value of 0-7!'
+        # Build a single channel read command.
+        # For example channel zero = 0b11000000
+        command = 0b11 << 6  # Start bit, single channel read
+        command |= (adc_number & 0x07) << 3  # Channel number (in 3 bits)
+        # Note the bottom 3 bits of command are 0, this is to account for the
+        # extra clock to do the conversion, and the low null bit returned at
+        # the start of the response.
+        resp = self._spi.transfer([command, 0x0, 0x0])
+        # Parse out the 10 bits of response data and return it.
+        result = (resp[0] & 0x01) << 9
+        result |= (resp[1] & 0xFF) << 1
+        result |= (resp[2] & 0x80) >> 7
+        return result & 0x3FF
+
+    def read(self, channel):
+        assert 0 <= channel <= 4, 'ADC number must be a value of 0-7!'
+        r = self._spi.xfer2([1, (8 + channel) << 4, 0])
+        out = ((r[1] & 3) << 8) + r[2]
+        return out
+
+    def voltage(self, channel):
+        return self._vref * self.read(channel) / 1024.0
+
+    def start(self, freq=220):
+        update_timing = 1.0 / float(freq)
+        while True:
+            try:
+                time.sleep(update_timing)
+                self.handle_request()
+            except KeyboardInterrupt:
+                import sys
+                print('KeyboardInterrupt on line {}'.format(sys.exc_info()[-1].tb_lineno))
+                sys.exit(2)
+            except Exception as e:
+                import sys
+                print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
+                print(str(e))
+                sys.exit(2)
+"""
+
 class OpenBCIIO(object):
     def __init__(self, port_name=None, baud=115200, index_channels=None, signal=None, channels=None):
         import openbci.open_bci_v3 as bci
