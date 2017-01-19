@@ -14,7 +14,7 @@ def main():
     # EEG signal
     signal_eeg = MultiChannelSignal(length=2000,
                                     estimated_acquisition_freq=250.0,
-                                    label_channels=['Left ear', 'Left forehead', 'Right forehead', 'Right ear'])
+                                    label_channels=['central', 'right', 'left', 'top'])
 
     signals['eeg'] = signal_eeg
 

@@ -197,6 +197,10 @@ border-image: url(:/Buttons/MuteButtonWhite.png);
       <string/>
      </property>
     </widget>
+    <zorder>plus_volume</zorder>
+    <zorder>minus_volume</zorder>
+    <zorder>mute_volume</zorder>
+    <zorder>label_2</zorder>
    </widget>
    <widget class="QPushButton" name="home">
     <property name="geometry">
@@ -542,6 +546,25 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
       <string>After Time :</string>
      </property>
     </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>400</y>
+       <width>121</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="ressources.qrc">:/Buttons/polycortex-logo-1--1- (1).png</pixmap>
+     </property>
+    </widget>
     <zorder>pushButton</zorder>
     <zorder>pushButton_2</zorder>
     <zorder>freemode_radioButton</zorder>
@@ -553,6 +576,7 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
     <zorder>frequency_Alabel</zorder>
     <zorder>frequency_Bspin</zorder>
     <zorder>frequency_Aspin</zorder>
+    <zorder>label_2</zorder>
    </widget>
    <zorder>channel_widget</zorder>
    <zorder>home_widget</zorder>
@@ -563,7 +587,9 @@ border-image: url(:/Buttons/FavoriteButtonWhite.png);
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="ressources.qrc"/>
+ </resources>
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroup"/>
