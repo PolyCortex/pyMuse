@@ -236,6 +236,7 @@ class OpenBCIIO(object):
         self.signal['eeg'].id = sample.id
         self.signal['eeg'].add_data(data_to_save, add_time=False)
         self.signal['eeg'].add_time((self.current_sample_id + sample.id) / self.sample_rate)
+        self.signal['eeg'].add_datetime(datetime.now())
         self.signal['eeg'].lock.release()
         if sample.id == 255:
             self.current_sample_id += 256
