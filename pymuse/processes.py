@@ -122,6 +122,7 @@ class WriteToFile(Process):
         self.name = 'writetofile'
         self.last_save = datetime.now()
         self.data_to_write = []
+        self.time_to_write = []
         if 'file_name' in param:
             self.file_name = str(param['file_name'])
         else:
@@ -135,13 +136,20 @@ class WriteToFile(Process):
         time_now = datetime.now()
         seconds_passed = (time_now - self.last_save).total_seconds()
         if seconds_passed > self.save_delay:
+            self.data_to_write.append(data_in.data)
+            self.time_to_write.append(data_in.datetimes[0])
+
             f_handle = open(self.file_name, 'a')
-            strheader = str(data_in.datetimes[0]) + ', Channels: ' + str(data_in.number_of_channels) + ', ' + ', '.join(data_in.label_channels) + ', event, ' + data_in.related_event
-            for line in self.data_to_write:
+            for i, line in enumerate(self.data_to_write):
+                strheader = str(self.time_to_write[i]) + ', Channels: ' + str(data_in.number_of_channels) + ', ' + ', '.join(data_in.label_channels) + ', event, ' + data_in.related_event
                 np.savetxt(f_handle, line, header=strheader, newline='\n', delimiter=',')
             f_handle.close()
             self.last_save = datetime.now()
+
             self.data_to_write = []
+            self.time_to_write = []
         else:
             self.data_to_write.append(data_in.data)
+            self.time_to_write.append(data_in.datetimes[0])
+
         return data_in
