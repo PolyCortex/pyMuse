@@ -223,12 +223,17 @@ class OpenBCIIO(object):
         time.sleep(5)
 
         self.current_sample_id = 0
-        self.init_time = datetime.now()
+        self.init_sample_id = 0
+        self.init_time = None  # datetime.now()
 
     def start(self):
         self.board.start_streaming(self.callback_rawdata)
 
     def callback_rawdata(self, sample):
+        id = sample.id
+        if self.init_time is None:
+            self.init_sample_id = id
+            self.init_time = datetime.now()
 
         data = sample.channel_data
         data_to_save = [data[ind] for ind in self.index_channels]
@@ -236,11 +241,10 @@ class OpenBCIIO(object):
         self.signal['eeg'].id = sample.id
         self.signal['eeg'].add_data(data_to_save, add_time=False)
         self.signal['eeg'].add_time((self.current_sample_id + sample.id) / self.sample_rate)
-        self.signal['eeg'].add_datetime(datetime.now())
+        self.signal['eeg'].add_datetime(self.init_time + datetime.timedelta(seconds=(self.current_sample_id + sample.id - self.init_sample_id) / self.sample_rate))
         self.signal['eeg'].lock.release()
         if sample.id == 255:
             self.current_sample_id += 256
-        #print self.current_sample_id + sample.id, (self.current_sample_id + sample.id) / self.sample_rate
 
     def printData(self, sample):
         print "----------------"
