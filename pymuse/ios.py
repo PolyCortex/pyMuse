@@ -9,7 +9,7 @@ except ImportError:
 import types
 import time
 import timeit
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # this method of reporting timeouts only works by convention
@@ -241,7 +241,7 @@ class OpenBCIIO(object):
         self.signal['eeg'].id = sample.id
         self.signal['eeg'].add_data(data_to_save, add_time=False)
         self.signal['eeg'].add_time((self.current_sample_id + sample.id) / self.sample_rate)
-        self.signal['eeg'].add_datetime(self.init_time + datetime.timedelta(seconds=(self.current_sample_id + sample.id - self.init_sample_id) / self.sample_rate))
+        self.signal['eeg'].add_datetime(self.init_time + timedelta(seconds=(self.current_sample_id + sample.id - self.init_sample_id) / self.sample_rate))
         self.signal['eeg'].lock.release()
         if sample.id == 255:
             self.current_sample_id += 256

@@ -1,6 +1,6 @@
 __author__ = 'benjamindeleener'
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 import multiprocessing
 
 
@@ -20,7 +20,7 @@ class Signal(object):
         self.length = length
         self.estimated_acquisition_freq = estimated_acquisition_freq
         self.time = np.linspace(-float(self.length) / self.estimated_acquisition_freq + 1.0 / self.estimated_acquisition_freq, 0.0, self.length)
-        self.datetimes = np.array([datetime.now]*self.length)
+        self.datetimes = np.array([datetime.now()]*self.length)
         self.init_time = datetime.now()
         self.lock = multiprocessing.Lock()
 
@@ -97,18 +97,21 @@ class MultiChannelSignal(Signal):
 
         if time_start is None:
             # get number of elements to extract
-            time_limit = self.time[-1] - length_window
+            time_limit = self.datetimes[-1] - timedelta(milliseconds=length_window)
         else:
             time_limit = time_start
 
         length = self.estimated_acquisition_freq * length_window / 1000.0
 
-        idx = np.searchsorted(self.time, time_limit, side="left")
+        idx = np.searchsorted(self.datetimes, time_limit, side="left")
 
         # extract elements and return
         index_end = idx + length
-        if idx+length >= len(self.time):
-            index_end = len(self.time)
+        if index_end >= len(self.datetimes):
+            index_end = len(self.datetimes)
+
+        index_end = int(index_end)
+
         return self.time[idx:index_end], self.data[:, idx:index_end], self.datetimes[idx:index_end]
 
     def get_signal_window(self, length_window=200.0, time_start=None):

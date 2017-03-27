@@ -1,6 +1,6 @@
 from utils import Thread, AutoQueue
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 
 import numpy as np
@@ -196,11 +196,14 @@ class Analyzer(Thread):
 
                 print 'Pipeline frequency = ' + str(round(self.actual_refresh_frequency, 2)) + ' Hz'
 
-                time_start_window = datetime.now() - datetime.timedelta(milliseconds=self.window_duration) - datetime.timedelta(milliseconds=self.offset)
+                time_start_window = datetime.now() - timedelta(milliseconds=self.window_duration) - timedelta(milliseconds=self.offset)
 
                 self.signal.lock.acquire()
                 signal = self.signal.get_signal_window(length_window=self.window_duration, time_start=time_start_window)
                 self.signal.lock.release()
+
+                if signal.data.shape[1] < 25:
+                    continue
 
                 # signal.event_related = XX
 

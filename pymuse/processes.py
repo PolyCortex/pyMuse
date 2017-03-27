@@ -111,6 +111,7 @@ class ButterFilter(Process):
         return b, a
 
     def process(self, data_in):
+        print data_in.data.shape[1]
         #data_in.data = signal.filtfilt(self.filter_param[0], self.filter_param[1], data_in.data, method='gust')
         data_in.data = signal.filtfilt(self.filter_param[0], self.filter_param[1], data_in.data, method='pad', padtype='even')
         return data_in
