@@ -53,6 +53,13 @@ private slots:
 
     void on_frequency_Aspin_valueChanged();
 
+
+    void on_freemode_radioButton_clicked();
+
+    void on_acquisition_radioButton_clicked();
+
+    void on_p300remote_radioButton_clicked();
+
 private:
     Ui::MainWindow *ui;  
 };

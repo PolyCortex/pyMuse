@@ -19,7 +19,7 @@
 
 #define SERVER "127.0.0.1" //ip adress of udp server
 #define PORT 8888
-#define BUFLEN 16
+#define BUFLEN 65507
 struct sockaddr_in server, si_other;
 SOCKET s;
 int slen;
@@ -31,9 +31,11 @@ bool stop = false;
 unsigned long startTime = 0;
 std::pair<QPushButton*,QPushButton*> p300Array[TestSize];
 int arr[TestSize];
+std::string udpArr[TestSize];
 bool arrcomplet = false;
 int BSLEEPTIME = 80;
 int ASLEEPTIME = 100;
+std::string mode;
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -51,6 +53,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->frequency_Bspin->setValue(BSLEEPTIME);
     ui->frequency_Aspin->setValue(ASLEEPTIME);
+    ui->freemode_radioButton->setChecked(true);
+    mode = "F";
+
 
     slen = sizeof(si_other);
 
@@ -83,7 +88,17 @@ void MainWindow::randomArray()
         srand((unsigned)time(NULL));
 
         for (int i = 0; i < TestSize; i++)
+        {
             arr[i] = 1 + rand() % 4;
+            if (arr[i] == 1)
+                udpArr[i] = "L1";
+            else if (arr[i] == 2)
+                udpArr[i] = "L2";
+            else if (arr[i] == 3)
+                udpArr[i] = "C1";
+            else if (arr[i] == 4)
+                udpArr[i] = "C2";
+        }
 
         arrcomplet = true;
     }
@@ -138,17 +153,25 @@ void MainWindow::p300Effect()
     using namespace std::this_thread; // sleep_for, sleep_until
     using namespace std::chrono; // nanoseconds, system_clock, seconds
 
-    //    TO SEND : array au complet au debut, & la fr/quence(ex 80 + 120)
-    for (int i = 0; i < TestSize; i++)
+    int longueurOnde = BSLEEPTIME + ASLEEPTIME;                      // Temps d'une iteration
+    std::string initialUdpSignal;
+    initialUdpSignal = std::to_string(longueurOnde);
+    initialUdpSignal += (" " + mode);                                  // Mode du P300
+
+    for (int i = 0; i < TestSize; i++)                               // Concatenation des lignes et colonnes
     {
-        std::string messageDebut = std::to_string(arr[i]);
-        const char* messageDebut_char = messageDebut.c_str();
-        if (sendto(s, messageDebut_char, int(strlen(messageDebut_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
-        {
-            printf("sendto() failed with error code : %d", WSAGetLastError());
-            exit(EXIT_FAILURE);
-        }
+        initialUdpSignal += (" " + udpArr[i]);
     }
+
+    initialUdpSignal += " DONE";
+    const char* initialUdpSignal_char = initialUdpSignal.c_str();
+    if (sendto(s, initialUdpSignal_char, int(strlen(initialUdpSignal_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+    {
+        printf("sendto() failed with error code : %d", WSAGetLastError());
+        exit(EXIT_FAILURE);
+    }
+
+/*
     std::string messageDebut = "DONE";
     const char* messageDebut_char = messageDebut.c_str();
     if (sendto(s, messageDebut_char, int(strlen(messageDebut_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
@@ -156,8 +179,8 @@ void MainWindow::p300Effect()
         printf("sendto() failed with error code : %d", WSAGetLastError());
         exit(EXIT_FAILURE);
     }
-
-
+*/
+/*
     std::string finArrayS = std::to_string(startTime);
     const char* finArrayS_char = finArrayS.c_str();
     if (sendto(s, finArrayS_char, int(strlen(finArrayS_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
@@ -179,16 +202,16 @@ void MainWindow::p300Effect()
         printf("sendto() failed with error code : %d", WSAGetLastError());
         exit(EXIT_FAILURE);
     }
-
+*/
     for (int i = 0; i < TestSize - 1 && stop == false  ;i++)
     {
         start();
         // TOSEND: time a chaque je sais pas trop combien de temps et mon index (modulo nombre itteration).
-        if (i%5 == 0) //a tous les 50, on envoie un message
+        if (i%5 == 0) //a tous les 5, on envoie un message
         {
-            std::string messageDebut = std::to_string(startTime) + " " + std::to_string(i);
-            const char* messageDebut_char = messageDebut.c_str();
-            if (sendto(s, messageDebut_char, int(strlen(messageDebut_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+            std::string messageIteratif = std::to_string(startTime) + " " + std::to_string(i);
+            const char* messageIteratif_char = messageIteratif.c_str();
+            if (sendto(s, messageIteratif_char, int(strlen(messageIteratif_char)), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
             {
                 printf("sendto() failed with error code : %d", WSAGetLastError());
                 exit(EXIT_FAILURE);
@@ -339,4 +362,22 @@ void MainWindow::on_frequency_Bspin_valueChanged()
 void MainWindow::on_frequency_Aspin_valueChanged()
 {
     ASLEEPTIME = ui->frequency_Aspin->value();
+}
+
+
+
+
+void MainWindow::on_freemode_radioButton_clicked()
+{
+    mode = "F";
+}
+
+void MainWindow::on_acquisition_radioButton_clicked()
+{
+    mode = "T";
+}
+
+void MainWindow::on_p300remote_radioButton_clicked()
+{
+    mode = "U";
 }
