@@ -86,7 +86,7 @@ class MultiChannelSignal(Signal):
         else:
             print 'Error: length of signal (=' + str(len(s)) + ') is not equal to the number of channel (=' + str(self.number_of_channels) + ').'
 
-    def get_window_ms(self, length_window=200.0):
+    def get_window_ms(self, length_window=200.0, time_start=None):
         """
         This function extracts a window from the signal with the specified length (in milliseconds).
         The effective length of the window (i.e., the number of elements) may vary, because the acquisition frequency varies.
@@ -94,12 +94,22 @@ class MultiChannelSignal(Signal):
         :param length_window: length of the window to extract, in milliseconds
         :return: ndarray with the signal window
         """
-        # get number of elements to extract
-        time_limit = self.time[-1] - length_window
+
+        if time_start is None:
+            # get number of elements to extract
+            time_limit = self.time[-1] - length_window
+        else:
+            time_limit = time_start
+
+        length = self.estimated_acquisition_freq * length_window / 1000.0
+
         idx = np.searchsorted(self.time, time_limit, side="left")
 
         # extract elements and return
-        return self.time[idx:], self.data[:, idx:], self.datetimes[idx:]
+        index_end = idx + length
+        if idx+length >= len(self.time):
+            index_end = len(self.time)
+        return self.time[idx:index_end], self.data[:, idx:index_end], self.datetimes[idx:index_end]
 
     def get_signal_window(self, length_window=200.0):
         signal_time, signal_data, signal_datetimes = self.get_window_ms(length_window=length_window)
