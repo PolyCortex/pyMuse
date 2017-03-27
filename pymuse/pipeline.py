@@ -126,7 +126,8 @@ class Analyzer(Thread):
         if self.list_process_string is None:
             raise ValueError("No process has been to the list.")
         self.list_params = list_params
-        print
+
+
         if len(self.list_params) != len(self.list_process_string):
             raise ValueError("List of parameters must have the same length as the list of processes.")
 
@@ -202,7 +203,7 @@ class Analyzer(Thread):
                 signal = self.signal.get_signal_window(length_window=self.window_duration, time_start=time_start_window)
                 self.signal.lock.release()
 
-                if signal.data.shape[1] < 25:
+                if signal.data.shape[1] < 125:
                     continue
 
                 # signal.event_related = XX

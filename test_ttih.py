@@ -26,7 +26,6 @@ def main():
                         list_params=[{'filter_type': 'bandpass', 'order': 1, 'cutoff_frequency': '0.25,35', 'acquisition_freq': 220.0},
                                      {'file_name': '/Users/benjamindeleener/data/test_muse/test.csv', 'save_delay': 180.0},
                                      None],
-
                                      {'filter_type': 'highpass', 'order': 1, 'cutoff_frequency': '0.5', 'acquisition_freq': 250.0},
     """
     pipeline = Analyzer(signal=signals['eeg'],
@@ -34,10 +33,16 @@ def main():
                         analysis_frequency=20.0,
                         list_process=['ButterFilter',
                                       'ButterFilter',
+                                      'ButterFilter',
                                       'WriteToFile'],
-                        list_params=[{'filter_type': 'bandstop', 'order': 3, 'cutoff_frequency': '40.0,80.0', 'acquisition_freq': 250.0},
-                                     {'filter_type': 'highpass', 'order': 3, 'cutoff_frequency': '1.0', 'acquisition_freq': 250.0},
-                                     {'file_name': '/Users/stephaniedolbec/data/test_ttih/20170326STIM/test.csv', 'save_delay': 10.0}],
+                        list_params=[{'filter_type': 'bandstop', 'order': 3, 'cutoff_frequency': '40.0,80.0',
+                                      'acquisition_freq': 250.0},
+                                     {'filter_type': 'lowpass', 'order': 3, 'cutoff_frequency': '50.0',
+                                      'acquisition_freq': 250.0},
+                                     {'filter_type': 'highpass', 'order': 3, 'cutoff_frequency': '1.0',
+                                      'acquisition_freq': 250.0},
+                                     {'file_name': '/Users/stephaniedolbec/data/test_ttih/acquisitions/'
+                                                   'no_contact/20170327/data_7.csv', 'save_delay': 10.0}],
                         processes_to_visualize=[])
 
     # Initializing the server
