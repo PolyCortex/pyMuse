@@ -34,12 +34,11 @@ def main():
                         analysis_frequency=20.0,
                         list_process=['ButterFilter',
                                       'ButterFilter',
-                                      'ButterFilter',
                                       'WriteToFile'],
                         list_params=[{'filter_type': 'bandstop', 'order': 3, 'cutoff_frequency': '40.0,80.0', 'acquisition_freq': 250.0},
-                                     {'filter_type': 'lowpass', 'order': 2, 'cutoff_frequency': '35.0', 'acquisition_freq': 250.0},
-                                     {'filter_type': 'highpass', 'order': 2, 'cutoff_frequency': '1.0', 'acquisition_freq': 250.0},
-                                     {'file_name': '/Users/stephaniedolbec/data/test_ttih/test_20170308.csv', 'save_delay': 10.0}],
+                                     {'filter_type': 'highpass', 'order': 3, 'cutoff_frequency': '1.0', 'acquisition_freq': 250.0},
+                                     {'file_name': '/Users/stephaniedolbec/data/test_ttih/20170326STIM/4frames/5Hz/'
+                                                   'checkerboard/data_1.csv', 'save_delay': 10.0}],
                         processes_to_visualize=[])
 
     # Initializing the server
