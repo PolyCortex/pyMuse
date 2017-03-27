@@ -113,6 +113,10 @@ class Analyzer(Thread):
         self.actual_refresh_frequency = analysis_frequency
         # self.last_save = datetime.now()
 
+        # this offset can be used if synchronisation is difficult, in milliseconds
+        # it moves in the past the sliding window, just to be sure it acquire a full window
+        self.offset = 0.0
+
         self.signal = signal
         self.window_duration = window_duration
 
@@ -192,10 +196,11 @@ class Analyzer(Thread):
 
                 print 'Pipeline frequency = ' + str(round(self.actual_refresh_frequency, 2)) + ' Hz'
 
-                self.signal.lock.acquire()
-                signal = self.signal.get_signal_window(length_window=self.window_duration)
-                self.signal.lock.release()
+                time_start_window = datetime.now() - datetime.timedelta(milliseconds=self.window_duration) - datetime.timedelta(milliseconds=self.offset)
 
+                self.signal.lock.acquire()
+                signal = self.signal.get_signal_window(length_window=self.window_duration, time_start=time_start_window)
+                self.signal.lock.release()
 
                 # signal.event_related = XX
 

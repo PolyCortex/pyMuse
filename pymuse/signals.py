@@ -111,8 +111,8 @@ class MultiChannelSignal(Signal):
             index_end = len(self.time)
         return self.time[idx:index_end], self.data[:, idx:index_end], self.datetimes[idx:index_end]
 
-    def get_signal_window(self, length_window=200.0):
-        signal_time, signal_data, signal_datetimes = self.get_window_ms(length_window=length_window)
+    def get_signal_window(self, length_window=200.0, time_start=None):
+        signal_time, signal_data, signal_datetimes = self.get_window_ms(length_window=length_window, time_start=time_start)
         signal = MultiChannelSignal(length=len(signal_time), estimated_acquisition_freq=self.estimated_acquisition_freq,
                                     number_of_channels=self.number_of_channels, label_channels=self.label_channels,
                                     signal_data=signal_data, signal_time=signal_time, datetimes=signal_datetimes)
