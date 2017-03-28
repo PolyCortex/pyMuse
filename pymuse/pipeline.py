@@ -1,9 +1,101 @@
 from utils import Thread, AutoQueue
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 
 import numpy as np
+
+import socket
+from multiprocessing import Lock
+from bisect import bisect_left
+
+
+class InterfaceEvents(Thread):
+    def __init__(self, udp_ip='127.0.0.1', udp_port='8888', message_size=16):
+        super(InterfaceEvents, self).__init__()
+
+        self.udp_ip = udp_ip
+        self.udp_port = udp_port
+        self.message_size = message_size
+
+        self.list_events = AutoQueue(maxsize=250)
+        self.list_events_time = AutoQueue(maxsize=250)
+
+        self.lock = Lock()
+
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
+        self.sock.bind((self.udp_ip, self.udp_port))
+
+        # first message, with the sequence
+        first_message, addr = self.sock.recvfrom(4096)  # buffer size is 1024 bytes
+
+        self.frq_event, self.type_event, self.sequence_usage, self.sequence_training = self.decript_first_message(first_message)
+
+    def get_nearest_message(self):
+        pass
+
+    def start(self):
+        super(InterfaceEvents, self).start()
+
+    def decript_first_message(self, m):
+        message_split_by_type = m.split(' DONE')
+
+        split_message = message_split_by_type[0].split(' ')
+        frq_event = split_message[0]
+        type_event = split_message[1]
+        sequence_usage = split_message[2:]
+
+        sequence_training = None
+        if type_event == 'T':
+            sequence_training_list = message_split_by_type[1].split(' ')[1:]
+            sequence_training = [[sequence_training_list[2*i], sequence_training_list[2*i+1].split(',')] for i in range(len(sequence_training_list) / 2)]
+
+        return frq_event, type_event, sequence_usage, sequence_training
+
+    def add_event_synchronicity(self, time_event, event):
+        self.lock.acquire()
+        self.list_events.put(event)
+        self.list_events_time.put(time_event)
+        self.lock.release()
+
+    def find_closest_event(self, datetime_window):
+        event_usage, event_training = '', ''
+        self.lock.acquire()
+
+        # search into the list of event and return the closest match
+        index_closest_after = bisect_left(self.list_events_time, datetime_window)
+        index_closest_before = index_closest_after - 1  # datetime are sorted in self.list_events_time
+
+        datetime_before = self.list_events_time[index_closest_before]
+        datetime_after = self.list_events_time[index_closest_before]
+        index_event_before = self.list_events[index_closest_before]
+        index_event_after = self.list_events[index_closest_before]
+
+        self.lock.release()
+
+        # linear interpolation to find closest match
+        percentage_closest = (datetime_window - datetime_before) / (datetime_after - datetime_before)
+        index_event_closest = index_event_before + percentage_closest * (index_event_after - index_event_before)
+        event_usage = self.sequence_usage[index_event_closest]
+
+        # TODO: add extraction of usage for training
+
+        return event_usage, event_training
+
+    def refresh(self):
+        while True:
+            data, addr = self.sock.recvfrom(self.message_size)  # buffer size is 1024 bytes
+            # data is a message with the structure:
+            # message: TEMPS_CLOCK,INDEX
+            # exemple: 2017-03-20 19:05:45.191179,42
+
+            split_message = data.split(',')
+            time_event = datetime.strptime(split_message[0], '%Y-%m-%d %H:%M:%S.%f')
+            index_event = int(split_message[1])
+            event = self.sequence_usage[index_event]
+
+            # add event to a list
+            self.add_event_synchronicity(time_event, event)
 
 
 class Analyzer(Thread):
@@ -21,6 +113,10 @@ class Analyzer(Thread):
         self.actual_refresh_frequency = analysis_frequency
         # self.last_save = datetime.now()
 
+        # this offset can be used if synchronisation is difficult, in milliseconds
+        # it moves in the past the sliding window, just to be sure it acquire a full window
+        self.offset = 0.0
+
         self.signal = signal
         self.window_duration = window_duration
 
@@ -30,7 +126,8 @@ class Analyzer(Thread):
         if self.list_process_string is None:
             raise ValueError("No process has been to the list.")
         self.list_params = list_params
-        print
+
+
         if len(self.list_params) != len(self.list_process_string):
             raise ValueError("List of parameters must have the same length as the list of processes.")
 
@@ -40,6 +137,8 @@ class Analyzer(Thread):
         self.number_of_process = len(self.list_process_string)
         self.queue_in = None
         self.queue_out = None
+
+        self.messages = None  # Messages()
 
         self.prepare_processes()
         self.initialize_interface()
@@ -98,10 +197,14 @@ class Analyzer(Thread):
 
                 print 'Pipeline frequency = ' + str(round(self.actual_refresh_frequency, 2)) + ' Hz'
 
+                time_start_window = datetime.now() - timedelta(milliseconds=self.window_duration) - timedelta(milliseconds=self.offset)
+
                 self.signal.lock.acquire()
-                signal = self.signal.get_signal_window(length_window=self.window_duration)
+                signal = self.signal.get_signal_window(length_window=self.window_duration, time_start=time_start_window)
                 self.signal.lock.release()
 
+                if signal.data.shape[1] < 125:
+                    continue
 
                 # signal.event_related = XX
 

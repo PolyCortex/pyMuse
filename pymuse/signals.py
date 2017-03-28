@@ -1,6 +1,6 @@
 __author__ = 'benjamindeleener'
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 import multiprocessing
 
 
@@ -20,6 +20,7 @@ class Signal(object):
         self.length = length
         self.estimated_acquisition_freq = estimated_acquisition_freq
         self.time = np.linspace(-float(self.length) / self.estimated_acquisition_freq + 1.0 / self.estimated_acquisition_freq, 0.0, self.length)
+        self.datetimes = np.array([datetime.now()]*self.length)
         self.init_time = datetime.now()
         self.lock = multiprocessing.Lock()
 
@@ -31,6 +32,10 @@ class Signal(object):
             diff = diff.total_seconds()
         self.time = np.roll(self.time, -1)
         self.time[-1] = float(diff * 1000.0)  # in milliseconds
+
+    def add_datetime(self, value):
+        self.datetimes = np.roll(self.datetimes, -1)
+        self.datetimes[-1] = value
 
     def compute_real_acquisition_frequency(self, window=None):
         if not window or window > self.length:
@@ -44,7 +49,7 @@ class Signal(object):
 
 
 class MultiChannelSignal(Signal):
-    def __init__(self, length=1000, estimated_acquisition_freq=220.0, number_of_channels=None, label_channels=None, signal_data=None, signal_time=None):
+    def __init__(self, length=1000, estimated_acquisition_freq=220.0, number_of_channels=None, label_channels=None, signal_data=None, signal_time=None, datetimes=None):
         super(MultiChannelSignal, self).__init__(length, estimated_acquisition_freq)
         self.label_channels = label_channels
         if number_of_channels:
@@ -64,6 +69,9 @@ class MultiChannelSignal(Signal):
         if signal_time is not None:
             self.time = signal_time
 
+        if datetimes is not None:
+            self.datetimes = datetimes
+
     def add_data(self, s, add_time=True):
         """
         Function for adding a new element in the ndarray. This function calls the inherited function add_time.
@@ -78,7 +86,7 @@ class MultiChannelSignal(Signal):
         else:
             print 'Error: length of signal (=' + str(len(s)) + ') is not equal to the number of channel (=' + str(self.number_of_channels) + ').'
 
-    def get_window_ms(self, length_window=200.0):
+    def get_window_ms(self, length_window=200.0, time_start=None):
         """
         This function extracts a window from the signal with the specified length (in milliseconds).
         The effective length of the window (i.e., the number of elements) may vary, because the acquisition frequency varies.
@@ -86,18 +94,31 @@ class MultiChannelSignal(Signal):
         :param length_window: length of the window to extract, in milliseconds
         :return: ndarray with the signal window
         """
-        # get number of elements to extract
-        time_limit = self.time[-1] - length_window
-        idx = np.searchsorted(self.time, time_limit, side="left")
+
+        if time_start is None:
+            # get number of elements to extract
+            time_limit = self.datetimes[-1] - timedelta(milliseconds=length_window)
+        else:
+            time_limit = time_start
+
+        length = self.estimated_acquisition_freq * length_window / 1000.0
+
+        idx = np.searchsorted(self.datetimes, time_limit, side="left")
 
         # extract elements and return
-        return self.time[idx:], self.data[:, idx:]
+        index_end = idx + length
+        if index_end >= len(self.datetimes):
+            index_end = len(self.datetimes)
 
-    def get_signal_window(self, length_window=200.0):
-        signal_time, signal_data = self.get_window_ms(length_window=length_window)
+        index_end = int(index_end)
+
+        return self.time[idx:index_end], self.data[:, idx:index_end], self.datetimes[idx:index_end]
+
+    def get_signal_window(self, length_window=200.0, time_start=None):
+        signal_time, signal_data, signal_datetimes = self.get_window_ms(length_window=length_window, time_start=time_start)
         signal = MultiChannelSignal(length=len(signal_time), estimated_acquisition_freq=self.estimated_acquisition_freq,
                                     number_of_channels=self.number_of_channels, label_channels=self.label_channels,
-                                    signal_data=signal_data, signal_time=signal_time)
+                                    signal_data=signal_data, signal_time=signal_time, datetimes=signal_datetimes)
         return signal
 
 
