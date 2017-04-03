@@ -4,6 +4,7 @@ import numpy as np
 from scipy import signal
 import time
 from datetime import datetime
+from pipeline import InterfaceEvents
 
 
 class Process(Thread):
@@ -114,6 +115,21 @@ class ButterFilter(Process):
         # print data_in.data.shape[1]  # len of data vector in channel
         #data_in.data = signal.filtfilt(self.filter_param[0], self.filter_param[1], data_in.data, method='gust')
         data_in.data = signal.filtfilt(self.filter_param[0], self.filter_param[1], data_in.data, method='pad', padtype='even')
+        return data_in
+
+
+class AssociateEvent(Process):
+    def __init__(self, queue_in, queue_out, param):
+        super(AssociateEvent, self).__init__(queue_in, queue_out)
+        self.name = 'associate_event'
+        self.events_interface = InterfaceEvents()
+
+    def start(self):
+        self.events_interface.start()
+        super(AssociateEvent, self).start()
+
+    def process(self, data_in):
+        data_in.event_related = self.events_interface.find_closest_event(data_in.datetimes[0])
         return data_in
 
 
