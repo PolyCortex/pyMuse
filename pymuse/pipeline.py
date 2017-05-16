@@ -179,8 +179,11 @@ class Analyzer(Thread):
                 print np.mean(abs(fft_signal.data[:, 7:13]), axis=1)
 
     def refresh(self):
-        for i in self.processes_to_visualize:
-            process_name = self.list_process_string[i]
+        for name in self.processes_to_visualize:
+            if name == 'Raw':
+                process_name = name
+            else:
+                process_name = self.list_process_string[name]
             viewer_name = process_name + "Viewer"
             mod = __import__('pymuse.viz', fromlist=[viewer_name])
             klass = getattr(mod, viewer_name)
@@ -213,13 +216,13 @@ class Analyzer(Thread):
                 self.queue_in.put(signal, block=True, timeout=None)
 
                 # refreshing viewers
-                for k, i in enumerate(self.processes_to_visualize):
-                    process_name = self.list_process_string[i]
-                    if process_name == 'Raw':
-                        self.list_viewer[i].refresh(signal)
+                for k, name in enumerate(self.processes_to_visualize):
+                    if name == 'Raw':
+                        self.list_viewer[k].refresh(signal)
                     else:
-                        if self.list_process[i].data is not None:
-                            self.list_viewer[k].refresh(self.list_process[i].data)
+                        process_name = self.list_process_string[name]
+                        if self.list_process[process_name].data is not None:
+                            self.list_viewer[k].refresh(self.list_process[process_name].data)
 
             except KeyboardInterrupt:
                 import sys

@@ -35,6 +35,9 @@ class MuseIO():
 
         self.server = OSCServer((self.udp_ip, self.port))
         self.server.timeout = 0
+        self.current_sample_id = 0
+        self.init_time = None
+        self.sample_rate = 220.0
 
         # funny python's way to add a method to an instance of a class
         self.server.handle_timeout = types.MethodType(handle_timeout, self.server)
@@ -59,9 +62,17 @@ class MuseIO():
         # tags will contain 'ffff'
         # args is a OSCMessage with data
         # source is where the message came from (in case you need to reply)
+        if self.init_time is None:
+            self.init_sample_id = 0
+            self.init_time = datetime.now()
+
         self.signal['eeg'].lock.acquire()
-        self.signal['eeg'].add_data(args)
+        self.signal['eeg'].id = self.current_sample_id
+        self.signal['eeg'].add_data(args, add_time=False)
+        self.signal['eeg'].add_time(self.current_sample_id / self.sample_rate)
+        self.signal['eeg'].add_datetime(self.init_time + timedelta(seconds=self.current_sample_id / self.sample_rate))
         self.signal['eeg'].lock.release()
+        self.current_sample_id += 1
 
     def callback_concentration(self, path, tags, args, source):
         if 'concentration' in self.signal:
