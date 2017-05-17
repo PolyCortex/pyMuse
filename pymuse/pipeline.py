@@ -153,13 +153,18 @@ class Analyzer(Thread):
         self.queue_in = list_queue[0]
         self.queue_out = list_queue[-1]
 
-        for i, process_name in enumerate(self.list_process_string):
-            mod = __import__('pymuse.processes', fromlist=[process_name])
-            klass = getattr(mod, process_name)
-            if self.list_params[i] is not None:
-                self.list_process.append(klass(list_queue[i], list_queue[i + 1], self.list_params[i]))
+        for i, process in enumerate(self.list_process_string):
+            if isinstance(process, str):
+                mod = __import__('pymuse.processes', fromlist=[process])
+                klass = getattr(mod, process)
+                if self.list_params[i] is not None:
+                    self.list_process.append(klass(list_queue[i], list_queue[i + 1], self.list_params[i]))
+                else:
+                    self.list_process.append(klass(list_queue[i], list_queue[i + 1]))
             else:
-                self.list_process.append(klass(list_queue[i], list_queue[i + 1]))
+                process.queue_in = list_queue[i]
+                process.queue_out = list_queue[i + 1]
+                self.list_process.append(process)
 
     def initialize_interface(self):
         pass
@@ -171,12 +176,6 @@ class Analyzer(Thread):
         for i, process_name in enumerate(self.list_process):
             self.list_process[i].start()
         super(Analyzer, self).start()
-
-    def display_alpha(self):
-        while True:
-            fft_signal = self.queue_out.get()
-            if len(fft_signal.data) != 0:
-                print np.mean(abs(fft_signal.data[:, 7:13]), axis=1)
 
     def refresh(self):
         for name in self.processes_to_visualize:

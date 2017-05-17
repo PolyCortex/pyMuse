@@ -1,6 +1,7 @@
 import sys
 import ctypes
 from PyQt4 import QtGui, QtCore
+from pymuse.processes import Process
 
 
 class Window(QtGui.QMainWindow):
@@ -113,9 +114,26 @@ class Window(QtGui.QMainWindow):
         self.unconnect2_btn.setDisabled(True)
 
 
+class BoatIOProcess(Process):
+    def __init__(self, queue_in=None, queue_out=None, param=None):
+        super(BoatIOProcess, self).__init__(queue_in, queue_out)
+        self.gui = None
+        if param is not none:
+            if 'gui' in param:
+                self.gui = param['gui']
+
+    def process(self, data_in):
+        if self.gui is not None:
+            self.gui.update_data(data_in.data[-1])
+        return data_in
+
+
 def main():
     app = QtGui.QApplication(sys.argv)
     gui = Window()
+
+
+
     sys.exit(app.exec_())
 
 
