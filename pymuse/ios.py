@@ -62,28 +62,30 @@ class MuseIO():
         # tags will contain 'ffff'
         # args is a OSCMessage with data
         # source is where the message came from (in case you need to reply)
-        if self.init_time is None:
-            self.init_sample_id = 0
-            self.init_time = datetime.now()
-
         self.signal['eeg'].lock.acquire()
         self.signal['eeg'].id = self.current_sample_id
         self.signal['eeg'].add_data(args, add_time=False)
-        self.signal['eeg'].add_time(self.current_sample_id / self.sample_rate)
-        self.signal['eeg'].add_datetime(self.init_time + timedelta(seconds=self.current_sample_id / self.sample_rate))
+        self.signal['eeg'].add_time(time.time())
+        self.signal['eeg'].add_datetime(datetime.now())
         self.signal['eeg'].lock.release()
-        self.current_sample_id += 1
 
     def callback_concentration(self, path, tags, args, source):
         if 'concentration' in self.signal:
-            self.signal['concentration'].add_time()
-            self.signal['concentration'].add_concentration(args[0])
-            #self.game.change_velocity(self.signal['concentration'].concentration)
+            self.signal['concentration'].lock.acquire()
+            self.signal['concentration'].id = self.current_sample_id
+            self.signal['concentration'].add_data(args, add_time=False)
+            self.signal['concentration'].add_time(time.time())
+            self.signal['concentration'].add_datetime(datetime.now())
+            self.signal['concentration'].lock.release()
 
     def callback_mellow(self, path, tags, args, source):
         if 'mellow' in self.signal:
-            self.signal['mellow'].add_time()
-            self.signal['mellow'].add_mellow(args[0])
+            self.signal['mellow'].lock.acquire()
+            self.signal['mellow'].id = self.current_sample_id
+            self.signal['mellow'].add_data(args, add_time=False)
+            self.signal['mellow'].add_time(time.time())
+            self.signal['mellow'].add_datetime(datetime.now())
+            self.signal['mellow'].lock.release()
 
     def handle_request(self):
         # clear timed_out flag

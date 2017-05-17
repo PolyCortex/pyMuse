@@ -1,7 +1,14 @@
 import sys
 import ctypes
 from PyQt4 import QtGui, QtCore
+import thread
+import time
+from datetime import datetime
+
+from pymuse.ios import MuseIO, MuseIOError
+from pymuse.signals import MultiChannelSignal
 from pymuse.processes import Process
+from pymuse.pipeline import Analyzer
 
 
 class Window(QtGui.QMainWindow):
@@ -13,9 +20,10 @@ class Window(QtGui.QMainWindow):
 
     def home(self):
         # Define dimensions - Only works on windows ...
-        user32 = ctypes.windll.user32
-        user32.SetProcessDPIAware()
-        [w, h] = [user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)]
+        #user32 = ctypes.windll.user32
+        #user32.SetProcessDPIAware()
+        #[w, h] = [user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)]
+        [w, h] = [1500, 800]
         [w_btn, h_btn] = [100, 30]
         [w_label, h_label] = [100, 30]
         # Create labels
@@ -29,6 +37,9 @@ class Window(QtGui.QMainWindow):
         self.status2_label.move(w-w_label, 0)
         self.speed1_label = QtGui.QLabel(self)
         self.speed1_pixmap = QtGui.QPixmap("j1_0.gif")
+        self.speed1_pixmap_1 = QtGui.QPixmap("j1_1.gif")
+        self.speed1_pixmap_2 = QtGui.QPixmap("j1_2.gif")
+        self.speed1_pixmap_3 = QtGui.QPixmap("j1_3.gif")
         self.speed1_label.setPixmap(self.speed1_pixmap)
         self.speed1_label.resize(self.speed1_pixmap.width(), self.speed1_pixmap.height())
         self.speed1_label.move(w/4-600/2, h/2-600/2)
@@ -113,29 +124,76 @@ class Window(QtGui.QMainWindow):
         self.connect2_btn.setEnabled(True)
         self.unconnect2_btn.setDisabled(True)
 
+    def update_data(self, data):
+        if 0.0 <= data < 0.3:
+            self.speed1_label.setPixmap(self.speed1_pixmap_1)
+        if 0.3 <= data < 0.6:
+            self.speed1_label.setPixmap(self.speed2_pixmap_2)
+        if 0.6 <= data <= 1.0:
+            self.speed1_label.setPixmap(self.speed3_pixmap_3)
+        return
 
-class BoatIOProcess(Process):
-    def __init__(self, queue_in=None, queue_out=None, param=None):
-        super(BoatIOProcess, self).__init__(queue_in, queue_out)
-        self.gui = None
-        if param is not none:
-            if 'gui' in param:
-                self.gui = param['gui']
 
-    def process(self, data_in):
-        if self.gui is not None:
-            self.gui.update_data(data_in.data[-1])
-        return data_in
+def update_data(update_frequency=20.0, gui=None, signal=None, lock=None):
+    update_timing = 1.0 / float(update_frequency)
+    if gui is not None:
+        times_web = 0.0
+        while True:
+            # put data in queue for HTML server to get it
+            now = time.time()
+            if now - times_web > 1.0 / update_frequency:
+                analysis_frequency = 1.0 / (now - times_web)
+                times_web = now
+
+                if lock is not None:
+                    lock.acquire()
+                s = signal.data[0, -1]
+                if lock is not None:
+                    lock.release()
+                gui.update_data(s)
+                print 'I am updating my data', s, analysis_frequency
+            else:
+                time.sleep(0.5 / update_frequency)
+        while True:
+
+            time.sleep(update_timing)
 
 
 def main():
     app = QtGui.QApplication(sys.argv)
     gui = Window()
 
+    signals = dict()
 
+    # EEG signal
+    signal_concentration = MultiChannelSignal(length=300,
+                                              estimated_acquisition_freq=10.0,
+                                              label_channels=['Concentration'])
+
+    update_frequency = 10.0
+
+    try:
+        thread.start_new_thread(update_data, (update_frequency, gui, signal_concentration, signal_concentration.lock))
+    except:
+        print "Error: unable to start thread"
+
+    signals['concentration'] = signal_concentration
+
+    # Initializing the server
+    try:
+        server = MuseIO(port=5001, signal=signals)
+    except MuseIOError, err:
+        print str(err)
+        sys.exit(1)
+
+    # Starting the server
+    try:
+        thread.start_new_thread(server.start, ())
+    except KeyboardInterrupt:
+        print "\nEnd of program: Caught KeyboardInterrupt"
+        sys.exit(0)
 
     sys.exit(app.exec_())
-
 
 main()
 
