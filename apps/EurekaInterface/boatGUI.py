@@ -40,11 +40,20 @@ class Window(QtGui.QMainWindow):
         self.speed1_pixmap_1 = QtGui.QPixmap("j1_1.gif")
         self.speed1_pixmap_2 = QtGui.QPixmap("j1_2.gif")
         self.speed1_pixmap_3 = QtGui.QPixmap("j1_3.gif")
+        self.speed1_pixmap_4 = QtGui.QPixmap("j1_4.gif")
+        self.speed1_pixmap_5 = QtGui.QPixmap("j1_5.gif")
+        self.speed1_pixmap_6 = QtGui.QPixmap("j1_6.gif")
         self.speed1_label.setPixmap(self.speed1_pixmap)
         self.speed1_label.resize(self.speed1_pixmap.width(), self.speed1_pixmap.height())
         self.speed1_label.move(w/4-600/2, h/2-600/2)
         self.speed2_label = QtGui.QLabel(self)
         self.speed2_pixmap = QtGui.QPixmap("j2_0.gif")
+        self.speed2_pixmap_1 = QtGui.QPixmap("j2_1.gif")
+        self.speed2_pixmap_2 = QtGui.QPixmap("j2_2.gif")
+        self.speed2_pixmap_3 = QtGui.QPixmap("j2_3.gif")
+        self.speed2_pixmap_4 = QtGui.QPixmap("j2_4.gif")
+        self.speed2_pixmap_5 = QtGui.QPixmap("j2_5.gif")
+        self.speed2_pixmap_6 = QtGui.QPixmap("j2_6.gif")
         self.speed2_label.setPixmap(self.speed2_pixmap)
         self.speed2_label.resize(self.speed2_pixmap.width(), self.speed2_pixmap.height())
         self.speed2_label.move(3*w/4-600/2, h/2-600/2)
@@ -125,12 +134,18 @@ class Window(QtGui.QMainWindow):
         self.unconnect2_btn.setDisabled(True)
 
     def update_data(self, data):
-        if 0.0 <= data < 0.3:
+        if 0.0 <= data < 0.17:
             self.speed1_label.setPixmap(self.speed1_pixmap_1)
-        if 0.3 <= data < 0.6:
-            self.speed1_label.setPixmap(self.speed2_pixmap_2)
-        if 0.6 <= data <= 1.0:
-            self.speed1_label.setPixmap(self.speed3_pixmap_3)
+        if 0.17 <= data < 0.33:
+            self.speed1_label.setPixmap(self.speed1_pixmap_2)
+        if 0.33 <= data < 0.5:
+            self.speed1_label.setPixmap(self.speed1_pixmap_3)
+        if 0.5 <= data < 0.67:
+            self.speed1_label.setPixmap(self.speed1_pixmap_4)
+        if 0.67 <= data < 0.83:
+            self.speed1_label.setPixmap(self.speed1_pixmap_5)
+        if 0.83 <= data <= 1:
+            self.speed1_label.setPixmap(self.speed1_pixmap_6)
         return
 
 
