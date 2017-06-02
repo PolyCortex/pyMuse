@@ -12,6 +12,8 @@ from pymuse.pipeline import Analyzer
 
 
 class Window(QtGui.QMainWindow):
+    change_image_P1 = QtCore.pyqtSignal(float)
+    change_image_P2 = QtCore.pyqtSignal(float)
 
     def __init__(self):
         super(Window, self).__init__()
@@ -76,6 +78,10 @@ class Window(QtGui.QMainWindow):
         self.unconnect1_btn.clicked.connect(self.cb_unconnect1)
         self.connect2_btn.clicked.connect(self.cb_connect2)
         self.unconnect2_btn.clicked.connect(self.cb_unconnect2)
+
+        self.change_image_P1.connect(self.update_data_P1)
+        self.change_image_P2.connect(self.update_data_P2)
+
         # Display window
         self.showFullScreen()
 
@@ -124,17 +130,30 @@ class Window(QtGui.QMainWindow):
         self.connect2_btn.setEnabled(True)
         self.unconnect2_btn.setDisabled(True)
 
-    def update_data(self, data):
+    @QtCore.pyqtSlot(float)
+    def update_data_P1(self, data):
+        print 'signal received P1', data
         if 0.0 <= data < 0.3:
             self.speed1_label.setPixmap(self.speed1_pixmap_1)
         if 0.3 <= data < 0.6:
-            self.speed1_label.setPixmap(self.speed2_pixmap_2)
+            self.speed1_label.setPixmap(self.speed1_pixmap_2)
         if 0.6 <= data <= 1.0:
-            self.speed1_label.setPixmap(self.speed3_pixmap_3)
+            self.speed1_label.setPixmap(self.speed1_pixmap_3)
+        return
+
+    @QtCore.pyqtSlot(float)
+    def update_data_P2(self, data):
+        print 'signal received P2', data
+        if 0.0 <= data < 0.3:
+            self.speed2_label.setPixmap(self.speed1_pixmap_1)
+        if 0.3 <= data < 0.6:
+            self.speed2_label.setPixmap(self.speed1_pixmap_2)
+        if 0.6 <= data <= 1.0:
+            self.speed2_label.setPixmap(self.speed1_pixmap_3)
         return
 
 
-def update_data(update_frequency=20.0, gui=None, signal=None, lock=None):
+def update_data(update_frequency=20.0, gui=None, signal=None, lock=None, player='P1'):
     update_timing = 1.0 / float(update_frequency)
     if gui is not None:
         times_web = 0.0
@@ -150,19 +169,16 @@ def update_data(update_frequency=20.0, gui=None, signal=None, lock=None):
                 s = signal.data[0, -1]
                 if lock is not None:
                     lock.release()
-                gui.update_data(s)
+                if player == 'P1':
+                    gui.change_image_P1.emit(s)
+                elif player == 'P2':
+                    gui.change_image_P2.emit(s)
                 print 'I am updating my data', s, analysis_frequency
             else:
                 time.sleep(0.5 / update_frequency)
-        while True:
-
-            time.sleep(update_timing)
 
 
-def main():
-    app = QtGui.QApplication(sys.argv)
-    gui = Window()
-
+def run_server(gui=None, port=5001, player='P1'):
     signals = dict()
 
     # EEG signal
@@ -173,7 +189,7 @@ def main():
     update_frequency = 10.0
 
     try:
-        thread.start_new_thread(update_data, (update_frequency, gui, signal_concentration, signal_concentration.lock))
+        thread.start_new_thread(update_data, (update_frequency, gui, signal_concentration, signal_concentration.lock, player))
     except:
         print "Error: unable to start thread"
 
@@ -181,7 +197,7 @@ def main():
 
     # Initializing the server
     try:
-        server = MuseIO(port=5001, signal=signals)
+        server = MuseIO(port=port, signal=signals)
     except MuseIOError, err:
         print str(err)
         sys.exit(1)
@@ -192,6 +208,14 @@ def main():
     except KeyboardInterrupt:
         print "\nEnd of program: Caught KeyboardInterrupt"
         sys.exit(0)
+
+
+def main():
+    app = QtGui.QApplication(sys.argv)
+    gui = Window()
+
+    run_server(gui=gui, port=5001, player='P1')
+    run_server(gui=gui, port=5002, player='P2')
 
     sys.exit(app.exec_())
 
