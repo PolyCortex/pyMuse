@@ -123,7 +123,7 @@ class Window(QtGui.QMainWindow):
         self.connexion_muse_P1 = None
         self.connexion_muse_P2 = None
         self.serial_channel = None
-        self.port = '/dev/'  # this line must be changed depending on the computer
+        self.port = '/dev/tty.usbmodem1411'  # this line must be changed depending on the computer
         self.baud = 9600
 
         # Display window
@@ -133,9 +133,11 @@ class Window(QtGui.QMainWindow):
         # Make sure the Muse are disconnected
         # Close the GUI
         if self.connexion_muse_P1 is not None:
-            self.connexion_muse_P1.kill()
+            self.connexion_muse_P1.sendcontrol('c')
+            self.connexion_muse_P1 = None
         if self.connexion_muse_P2 is not None:
-            self.connexion_muse_P2.kill()
+            self.connexion_muse_P2.sendcontrol('c')
+            self.connexion_muse_P2 = None
         if self.serial_channel is not None:
             self.serial_channel.close()
         sys.exit()
@@ -170,29 +172,31 @@ class Window(QtGui.QMainWindow):
         self.is_playing = True
         self.play_btn.setStyleSheet("background-color: green")
         self.play_btn.setDisabled(True)
-        self.connect1_btn.setEnabled(True)
+        self.stop_btn.setEnabled(True)
 
     def cb_stop(self):
         self.is_playing = False
         if self.serial_channel is not None:
             self.serial_channel.close()
         self.play_btn.setStyleSheet("background-color: grey")
-        self.connect1_btn.setEnabled(True)
-        self.play_btn.setDisabled(True)
+        self.stop_btn.setDisabled(True)
+        self.play_btn.setEnabled(True)
 
     def cb_connect1(self):
         # Needs to connect Muse to the program here
         # Verify that the connection is good
         # If the connection has failed, show an error message
         # If the connection is successful, disable the connect button and activate the unconnect one
+        connect_status = ['================== Muse Status ==================', 'Connection failure 5', pexpect.EOF, pexpect.TIMEOUT]
+
         muse_P1 = MUSES[str(self.Combo1.currentText())]
         cmd = 'muse-io --osc osc.udp://localhost:5001 --device ' + muse_P1
         print cmd
         try:
             self.connexion_muse_P1 = pexpect.spawn(cmd)
-            index = self.connexion_muse_P1.expect(['Connected.', 'Connection failure 5', pexpect.EOF, pexpect.TIMEOUT])
+            index = self.connexion_muse_P1.expect(connect_status)
             if index >= 1:
-                print index
+                print connect_status[index]
                 connected = False
                 self.connexion_muse_P1 = None
             else:
@@ -228,14 +232,16 @@ class Window(QtGui.QMainWindow):
         # Verify that the connection is good
         # If the connection has failed, show an error message
         # If the connection is successful, disable the connect button and activate the unconnect one
+        connect_status = ['================== Muse Status ==================', 'Connection failure 5', pexpect.EOF, pexpect.TIMEOUT]
+
         muse_P2 = MUSES[str(self.Combo2.currentText())]
         cmd = 'muse-io --osc osc.udp://localhost:5002 --device ' + muse_P2
         print cmd
         try:
             self.connexion_muse_P2 = pexpect.spawn(cmd)
-            index = self.connexion_muse_P2.expect(['Connected.', 'Connection failure 5', pexpect.EOF, pexpect.TIMEOUT])
+            index = self.connexion_muse_P2.expect(connect_status)
             if index >= 1:
-                print index
+                print connect_status[index]
                 connected = False
                 self.connexion_muse_P2 = None
             else:
@@ -263,6 +269,7 @@ class Window(QtGui.QMainWindow):
         self.Combo2.setEnabled(True)
         self.connect2_btn.setEnabled(True)
         self.unconnect2_btn.setDisabled(True)
+        self.connect2_btn.setStyleSheet("background-color: gray")
 
     @QtCore.pyqtSlot(float)
     def update_data_P1(self, data):
@@ -285,9 +292,9 @@ class Window(QtGui.QMainWindow):
         if self.serial_channel is not None:
             value = int(100 + data * 255)
             try:
-                self.serial_channel.write(value)  # between 100 and 355
+                self.serial_channel.write(str(value).encode())  # between 100 and 355
             except Exception as e:
-                print e
+                print 'Error when sending data to boat P1:', str(e)
                 self.is_playing = False
 
         return
@@ -313,9 +320,9 @@ class Window(QtGui.QMainWindow):
         if self.serial_channel is not None:
             value = int(400 + data * 255)
             try:
-                self.serial_channel.write(value)  # between 400 and 655
+                self.serial_channel.write(str(value).encode())  # between 400 and 655
             except Exception as e:
-                print e
+                print 'Error when sending data to boat P2:', str(e)
                 self.is_playing = False
 
         return
@@ -337,10 +344,11 @@ def update_data(update_frequency=20.0, gui=None, signal=None, lock=None, player=
                 if lock is not None:
                     lock.release()
                 if player == 'P1':
+                    print 'I am updating my data', s, analysis_frequency
                     gui.change_image_P1.emit(s)
                 elif player == 'P2':
                     gui.change_image_P2.emit(s)
-                #print 'I am updating my data', s, analysis_frequency
+
             else:
                 time.sleep(0.2 / update_frequency)
 
@@ -353,7 +361,7 @@ def run_server(gui=None, port=5001, player='P1'):
                                               estimated_acquisition_freq=10.0,
                                               label_channels=['Concentration'])
 
-    update_frequency = 10.0
+    update_frequency = 2.0
 
     try:
         thread.start_new_thread(update_data, (update_frequency, gui, signal_concentration, signal_concentration.lock, player))
