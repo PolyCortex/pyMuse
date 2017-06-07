@@ -191,12 +191,19 @@ class Window(QtGui.QMainWindow):
 
         muse_P1 = MUSES[str(self.Combo1.currentText())]
         cmd = 'muse-io --osc osc.udp://localhost:5001 --device ' + muse_P1
+        #cmd = ['muse-io', '--osc', 'osc.udp://localhost:5001', '--device', muse_P1]
         print cmd
+        """
         try:
-            self.connexion_muse_P1 = pexpect.spawn(cmd)
-            index = self.connexion_muse_P1.expect(connect_status)
+            import subprocess
+            #self.connexion_muse_P1 = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            index = 0
+
+            #self.connexion_muse_P1 = pexpect.spawn(cmd)
+            #index = self.connexion_muse_P1.expect(connect_status)
+            #self.connexion_muse_P1.interact()
+            #print connect_status[index]
             if index >= 1:
-                print connect_status[index]
                 connected = False
                 self.connexion_muse_P1 = None
             else:
@@ -207,13 +214,13 @@ class Window(QtGui.QMainWindow):
             self.connexion_muse_P1 = None
 
         if connected:
-            self.Combo1.setDisabled(True)
-            self.connect1_btn.setDisabled(True)
-            self.unconnect1_btn.setEnabled(True)
+            #self.Combo1.setDisabled(True)
+            #self.connect1_btn.setDisabled(True)
+            #self.unconnect1_btn.setEnabled(True)
             self.connect1_btn.setStyleSheet("background-color: green")
         else:
             self.connect1_btn.setStyleSheet("background-color: red")
-
+        """
 
     def cb_unconnect1(self):
         # Needs to disconnect the Muse and verify that the ports have been closed
@@ -237,27 +244,29 @@ class Window(QtGui.QMainWindow):
         muse_P2 = MUSES[str(self.Combo2.currentText())]
         cmd = 'muse-io --osc osc.udp://localhost:5002 --device ' + muse_P2
         print cmd
+        """
         try:
-            self.connexion_muse_P2 = pexpect.spawn(cmd)
-            index = self.connexion_muse_P2.expect(connect_status)
-            if index >= 1:
-                print connect_status[index]
-                connected = False
-                self.connexion_muse_P2 = None
-            else:
-                connected = True
+            #self.connexion_muse_P2 = pexpect.spawn(cmd)
+            #index = self.connexion_muse_P2.expect(connect_status)
+            #print connect_status[index]
+            #if index >= 1:
+            #    connected = False
+            #    self.connexion_muse_P2 = None
+            #else:
+            #    connected = True
         except Exception as e:
             print e
             connected = False
             self.connexion_muse_P2 = None
 
         if connected:
-            self.Combo2.setDisabled(True)
-            self.connect2_btn.setDisabled(True)
-            self.unconnect2_btn.setEnabled(True)
+            #self.Combo2.setDisabled(True)
+            #self.connect2_btn.setDisabled(True)
+            #self.unconnect2_btn.setEnabled(True)
             self.connect2_btn.setStyleSheet("background-color: green")
         else:
             self.connect2_btn.setStyleSheet("background-color: red")
+        """
 
     def cb_unconnect2(self):
         # Needs to disconnect the Muse and verify that the ports have been closed
@@ -361,7 +370,7 @@ def run_server(gui=None, port=5001, player='P1'):
                                               estimated_acquisition_freq=10.0,
                                               label_channels=['Concentration'])
 
-    update_frequency = 2.0
+    update_frequency = 5.0
 
     try:
         thread.start_new_thread(update_data, (update_frequency, gui, signal_concentration, signal_concentration.lock, player))
