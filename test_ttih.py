@@ -5,6 +5,7 @@ import time
 from pymuse.ios import OpenBCIIO, MuseIO, MuseIOError
 from pymuse.signals import MultiChannelSignal
 from pymuse.pipeline import Analyzer
+import easygui
 
 
 def main():
@@ -28,9 +29,37 @@ def main():
                                      None],
                                      {'filter_type': 'highpass', 'order': 1, 'cutoff_frequency': '0.5', 'acquisition_freq': 250.0},
     """
+
+    path = '/Users/stephaniedolbec/Desktop'
+    test_date = '20170419' # YYYYMMDD
+
+    # TODO : write function
+    msg = "Please fill in the fields below"
+    title = "Intialization of data acquisition(" + test_date + ")"
+    fieldNames = ["Initials", "Frequency (Hz)", "Test number"]
+    fieldValues = easygui.multenterbox(msg, title, fieldNames)
+    if fieldValues is None:
+        exit(0)
+    # make sure that none of the fields were left blank
+    while 1:
+        errmsg = ""
+        for i, name in enumerate(fieldNames):
+            if fieldValues[i].strip() == "":
+                errmsg += "{} is a required field.\n\n".format(name)
+        if errmsg == "":
+            break  # no problems found
+        fieldValues = easygui.multenterbox(errmsg, title, fieldNames, fieldValues)
+        if fieldValues is None:
+            break
+    name = format(fieldValues[0])
+    freq = format(fieldValues[1])
+    test_number = format(fieldValues[2])
+    file_name = '/data_' + test_date + '_' + name + '_' + test_number + '_' + freq + 'Hz.csv'
+
+
     pipeline = Analyzer(signal=signals['eeg'],
-                        window_duration=500,
-                        analysis_frequency=20.0,
+                        window_duration=2500,
+                        analysis_frequency=10.0,
                         list_process=['ButterFilter',
                                       'ButterFilter',
                                       'ButterFilter',
@@ -41,8 +70,7 @@ def main():
                                       'acquisition_freq': 250.0},
                                      {'filter_type': 'highpass', 'order': 3, 'cutoff_frequency': '1.0',
                                       'acquisition_freq': 250.0},
-                                     {'file_name': '/Users/stephaniedolbec/data/test_ttih/acquisitions/'
-                                                   'no_contact/20170327/data_7.csv', 'save_delay': 10.0}],
+                                     {'file_name': path + file_name, 'save_delay': 10.0}],
                         processes_to_visualize=[])
 
     # Initializing the server
