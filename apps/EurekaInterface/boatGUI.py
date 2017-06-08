@@ -6,6 +6,7 @@ import time
 from datetime import datetime
 import pexpect
 import serial
+import struct
 
 from pymuse.ios import MuseIO, MuseIOError
 from pymuse.signals import MultiChannelSignal
@@ -16,8 +17,7 @@ MUSES = {'Muse 1': 'Muse-8BEF', 'Muse 2': 'Muse-9948', 'Muse 3': 'Muse-944A', 'M
 
 
 class Window(QtGui.QMainWindow):
-    change_image_P1 = QtCore.pyqtSignal(float)
-    change_image_P2 = QtCore.pyqtSignal(float)
+    change_images = QtCore.pyqtSignal(float, float)
 
     def __init__(self):
         super(Window, self).__init__()
@@ -116,8 +116,7 @@ class Window(QtGui.QMainWindow):
         self.unconnect1_btn.clicked.connect(self.cb_unconnect1)
         self.connect2_btn.clicked.connect(self.cb_connect2)
         self.unconnect2_btn.clicked.connect(self.cb_unconnect2)
-        self.change_image_P1.connect(self.update_data_P1)
-        self.change_image_P2.connect(self.update_data_P2)
+        self.change_images.connect(self.update_data_Ard)
 
         # variables
         self.connexion_muse_P1 = None
@@ -280,64 +279,58 @@ class Window(QtGui.QMainWindow):
         self.unconnect2_btn.setDisabled(True)
         self.connect2_btn.setStyleSheet("background-color: gray")
 
-    @QtCore.pyqtSlot(float)
-    def update_data_P1(self, data):
+    @QtCore.pyqtSlot(float, float)
+    def update_data_Ard(self, dataP1, dataP2):
         if not self.is_playing:
             return
 
-        if 0.0 <= data < 0.3:
+        if 0.0 <= dataP1 < 0.17:
             self.speed1_label.setPixmap(self.speed1_pixmap_1)
-        if 0.17 <= data < 0.33:
+        if 0.17 <= dataP1 < 0.33:
             self.speed1_label.setPixmap(self.speed1_pixmap_2)
-        if 0.33 <= data < 0.5:
+        if 0.33 <= dataP1 < 0.5:
             self.speed1_label.setPixmap(self.speed1_pixmap_3)
-        if 0.5 <= data < 0.67:
+        if 0.5 <= dataP1 < 0.67:
             self.speed1_label.setPixmap(self.speed1_pixmap_4)
-        if 0.67 <= data < 0.83:
+        if 0.67 <= dataP1 < 0.83:
             self.speed1_label.setPixmap(self.speed1_pixmap_5)
-        if 0.83 <= data <= 1:
+        if 0.83 <= dataP1 <= 1:
             self.speed1_label.setPixmap(self.speed1_pixmap_6)
 
+        if 0.0 <= dataP2 < 0.17:
+            self.speed2_label.setPixmap(self.speed2_pixmap_1)
+        if 0.17 <= dataP2 < 0.33:
+            self.speed2_label.setPixmap(self.speed2_pixmap_2)
+        if 0.33 <= dataP2 < 0.5:
+            self.speed2_label.setPixmap(self.speed2_pixmap_3)
+        if 0.5 <= dataP2 < 0.67:
+            self.speed2_label.setPixmap(self.speed2_pixmap_4)
+        if 0.67 <= dataP2 < 0.83:
+            self.speed2_label.setPixmap(self.speed2_pixmap_5)
+        if 0.83 <= dataP2 <= 1:
+            self.speed2_label.setPixmap(self.speed2_pixmap_6)
+
         if self.serial_channel is not None:
-            value = int(100 + data * 255)
+            if dataP1 < 0.17:
+                dataP1 = 0.17
+            if dataP2 < 0.17:
+                dataP2 = 0.17
+            valueP1 = int(100 + dataP1 * 255)
+            valueP2 = int(100 + dataP2 * 255)
             try:
-                self.serial_channel.write(str(value).encode())  # between 100 and 355
+                while self.serial_channel.in_waiting:
+                    print 'Received', self.serial_channel.readline()
+                print 'Sending', valueP1, valueP2
+                self.serial_channel.write(str(valueP1)+str(valueP2))  # between 100 and 355
+                time.sleep(1)
             except Exception as e:
                 print 'Error when sending data to boat P1:', str(e)
                 self.is_playing = False
 
         return
 
-    @QtCore.pyqtSlot(float)
-    def update_data_P2(self, data):
-        if not self.is_playing:
-            return
 
-        if 0.0 <= data < 0.3:
-            self.speed2_label.setPixmap(self.speed2_pixmap_1)
-        if 0.17 <= data < 0.33:
-            self.speed2_label.setPixmap(self.speed2_pixmap_2)
-        if 0.33 <= data < 0.5:
-            self.speed2_label.setPixmap(self.speed2_pixmap_3)
-        if 0.5 <= data < 0.67:
-            self.speed2_label.setPixmap(self.speed2_pixmap_4)
-        if 0.67 <= data < 0.83:
-            self.speed2_label.setPixmap(self.speed2_pixmap_5)
-        if 0.83 <= data <= 1:
-            self.speed2_label.setPixmap(self.speed2_pixmap_6)
-
-        if self.serial_channel is not None:
-            value = int(400 + data * 255)
-            try:
-                self.serial_channel.write(str(value).encode())  # between 400 and 655
-            except Exception as e:
-                print 'Error when sending data to boat P2:', str(e)
-                self.is_playing = False
-
-        return
-
-
-def update_data(update_frequency=20.0, gui=None, signal=None, lock=None, player='P1'):
+def update_data(update_frequency=20.0, gui=None, signal_P1=None, signal_P2=None):
     if gui is not None:
         times_web = 0.0
         while True:
@@ -347,35 +340,41 @@ def update_data(update_frequency=20.0, gui=None, signal=None, lock=None, player=
                 analysis_frequency = 1.0 / (now - times_web)
                 times_web = now
 
-                if lock is not None:
-                    lock.acquire()
-                s = signal.data[0, -1]
-                if lock is not None:
-                    lock.release()
-                if player == 'P1':
-                    print 'I am updating my data', s, analysis_frequency
-                    gui.change_image_P1.emit(s)
-                elif player == 'P2':
-                    gui.change_image_P2.emit(s)
+                if signal_P1.lock is not None:
+                    signal_P1.lock.acquire()
+                dP1 = signal_P1.data[0, -1]
+                if signal_P1.lock is not None:
+                    signal_P1.lock.release()
+
+                if signal_P2.lock is not None:
+                    signal_P2.lock.acquire()
+                dP2 = signal_P2.data[0, -1]
+                if signal_P2.lock is not None:
+                    signal_P2.lock.release()
+
+                print 'I am updating my data', dP1, dP2, analysis_frequency
+                gui.change_images.emit(dP1, dP2)
 
             else:
-                time.sleep(0.2 / update_frequency)
+                time.sleep(0.25 / update_frequency)
 
 
-def run_server(gui=None, port=5001, player='P1'):
+def run_server(gui=None, port=5001, player_signal=None):
     signals = dict()
 
     # EEG signal
-    signal_concentration = MultiChannelSignal(length=300,
-                                              estimated_acquisition_freq=10.0,
-                                              label_channels=['Concentration'])
+    if player_signal is None:
+        signal_concentration = MultiChannelSignal(length=300,
+                                                  estimated_acquisition_freq=10.0,
+                                                  label_channels=['Concentration'])
+    else:
+        signal_concentration = player_signal
 
-    update_frequency = 5.0
-
-    try:
+    """try:
         thread.start_new_thread(update_data, (update_frequency, gui, signal_concentration, signal_concentration.lock, player))
     except:
         print "Error: unable to start thread"
+    """
 
     signals['concentration'] = signal_concentration
 
@@ -398,8 +397,23 @@ def main():
     app = QtGui.QApplication(sys.argv)
     gui = Window()
 
-    run_server(gui=gui, port=5001, player='P1')
-    run_server(gui=gui, port=5002, player='P2')
+    signal_concentration_P1 = MultiChannelSignal(length=300,
+                                                 estimated_acquisition_freq=10.0,
+                                                 label_channels=['Concentration'])
+
+    signal_concentration_P2 = MultiChannelSignal(length=300,
+                                                 estimated_acquisition_freq=10.0,
+                                                 label_channels=['Concentration'])
+
+    run_server(gui=gui, port=5001, player_signal=signal_concentration_P1)
+    run_server(gui=gui, port=5002, player_signal=signal_concentration_P2)
+
+
+    update_frequency = 0.5
+    try:
+        thread.start_new_thread(update_data, (update_frequency, gui, signal_concentration_P1, signal_concentration_P2))
+    except:
+        print "Error: unable to start thread"
 
     sys.exit(app.exec_())
 

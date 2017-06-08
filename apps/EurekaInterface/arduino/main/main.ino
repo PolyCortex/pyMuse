@@ -10,28 +10,30 @@ int muse2 = 0;
 
 void setup() {
     Serial.begin(9600);
-    Serial.println("Hello Computer");
+    //Serial.println("Hello Computer");
 }
 
 void loop() {
-  
-    // communication pyserial
-    // read from port 0, send to port 1:
+    // communication with pyserial
     if (Serial.available()) {
-        int museData = Serial.parseInt();
-        //Serial.write(museData);
-        if (museData >= 100 and museData <= 355) {
-            motorSpeed1 = museData - 100;
-            Serial.println("Muse 1");
-            Serial.println(motorSpeed1);
-        } else if (museData >= 400 and museData <= 655){
-            motorSpeed2 = museData - 400;
-            Serial.println("Muse 2");
-            Serial.println(motorSpeed2);
+        //Serial.println("RECEIVED");
+        String data = Serial.readString();
+        String dataP1 = data.substring(0,3);
+        String dataP2 = data.substring(3,6);
+        int museDataP1 = dataP1.toInt();
+        int museDataP2 = dataP2.toInt();
+        if (museDataP1 >= 100 and museDataP2 >= 100) {
+          motorSpeed1 = museDataP1 - 100;
+          Serial.println("Muse 1");
+          Serial.println(motorSpeed1);
+          motorSpeed2 = museDataP2 - 100;
+          Serial.println("Muse 2");
+          Serial.println(motorSpeed2);
         }
     }
 
     analogWrite(motorPin1, motorSpeed1);
     analogWrite(motorPin2, motorSpeed2);
     delay(100);
+    //Serial.println("Ready");
 }
