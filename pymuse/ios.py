@@ -35,6 +35,9 @@ class MuseIO():
 
         self.server = OSCServer((self.udp_ip, self.port))
         self.server.timeout = 0
+        self.current_sample_id = 0
+        self.init_time = None
+        self.sample_rate = 220.0
 
         # funny python's way to add a method to an instance of a class
         self.server.handle_timeout = types.MethodType(handle_timeout, self.server)
@@ -60,19 +63,29 @@ class MuseIO():
         # args is a OSCMessage with data
         # source is where the message came from (in case you need to reply)
         self.signal['eeg'].lock.acquire()
-        self.signal['eeg'].add_data(args)
+        self.signal['eeg'].id = self.current_sample_id
+        self.signal['eeg'].add_data(args, add_time=False)
+        self.signal['eeg'].add_time(time.time())
+        self.signal['eeg'].add_datetime(datetime.now())
         self.signal['eeg'].lock.release()
 
     def callback_concentration(self, path, tags, args, source):
         if 'concentration' in self.signal:
-            self.signal['concentration'].add_time()
-            self.signal['concentration'].add_concentration(args[0])
-            #self.game.change_velocity(self.signal['concentration'].concentration)
+            self.signal['concentration'].lock.acquire()
+            self.signal['concentration'].id = self.current_sample_id
+            self.signal['concentration'].add_data(args, add_time=False)
+            self.signal['concentration'].add_time(time.time())
+            self.signal['concentration'].add_datetime(datetime.now())
+            self.signal['concentration'].lock.release()
 
     def callback_mellow(self, path, tags, args, source):
         if 'mellow' in self.signal:
-            self.signal['mellow'].add_time()
-            self.signal['mellow'].add_mellow(args[0])
+            self.signal['mellow'].lock.acquire()
+            self.signal['mellow'].id = self.current_sample_id
+            self.signal['mellow'].add_data(args, add_time=False)
+            self.signal['mellow'].add_time(time.time())
+            self.signal['mellow'].add_datetime(datetime.now())
+            self.signal['mellow'].lock.release()
 
     def handle_request(self):
         # clear timed_out flag

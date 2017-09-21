@@ -3,8 +3,8 @@ __author__ = 'benjamindeleener'
 import sys
 import time
 from pymuse.ios import MuseIO, MuseIOError
-from pymuse.viz import ViewerSignal
 from pymuse.signals import MultiChannelSignal
+from pymuse.pipeline import Analyzer
 
 
 def main():
@@ -12,13 +12,18 @@ def main():
     signals, viewers = dict(), dict()
 
     # EEG signal
-    signal_eeg = MultiChannelSignal(length=2000,
+    signal_eeg = MultiChannelSignal(length=10000,
                                     estimated_acquisition_freq=220.0,
                                     label_channels=['Left ear', 'Left forehead', 'Right forehead', 'Right ear'])
-    viewer_eeg = ViewerSignal(window_duration=5000.0, signal=signal_eeg, refresh_freq=220.0, signal_boundaries=[600, 1200])
 
     signals['eeg'] = signal_eeg
-    viewers['eeg'] = viewer_eeg
+
+    pipeline = Analyzer(signal=signals['eeg'],
+                        window_duration=8000,
+                        analysis_frequency=20.0,
+                        list_process=['WriteToFile'],
+                        list_params=[{'file_name': 'data_muse.csv', 'save_delay': 10.0}],
+                        processes_to_visualize=['Raw'])
 
     # Initializing the server
     try:
@@ -27,9 +32,8 @@ def main():
         print str(err)
         sys.exit(1)
 
-    # Displaying the viewers
-    for sign in viewers:
-        viewers[sign].start()
+    # Starting the pipeline
+    pipeline.start()
 
     # Starting the server
     try:

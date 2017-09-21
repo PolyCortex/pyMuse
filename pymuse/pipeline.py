@@ -60,18 +60,20 @@ class InterfaceEvents(Thread):
 
     def find_closest_event(self, datetime_window):
         event_usage, event_training = '', ''
+
         self.lock.acquire()
+        list_events_time = list(self.list_events_time)
+        list_events = list(self.list_events)
+        self.lock.release()
 
         # search into the list of event and return the closest match
-        index_closest_after = bisect_left(self.list_events_time, datetime_window)
+        index_closest_after = bisect_left(list_events_time, datetime_window)
         index_closest_before = index_closest_after - 1  # datetime are sorted in self.list_events_time
 
-        datetime_before = self.list_events_time[index_closest_before]
-        datetime_after = self.list_events_time[index_closest_before]
-        index_event_before = self.list_events[index_closest_before]
-        index_event_after = self.list_events[index_closest_before]
-
-        self.lock.release()
+        datetime_before = list_events_time[index_closest_before]
+        datetime_after = list_events_time[index_closest_before]
+        index_event_before = list_events[index_closest_before]
+        index_event_after = list_events[index_closest_before]
 
         # linear interpolation to find closest match
         percentage_closest = (datetime_window - datetime_before) / (datetime_after - datetime_before)
@@ -99,7 +101,8 @@ class InterfaceEvents(Thread):
 
 
 class Analyzer(Thread):
-    def __init__(self, signal, window_duration, analysis_frequency=10.0, list_process=None, list_params=None, processes_to_visualize=None):
+    def __init__(self, signal, window_duration, analysis_frequency=10.0, list_process=None, list_params=None,
+                 processes_to_visualize=None, events_interface=None):
         """
         Constructor of analyzer. This class aims at providing the support for creating analysis pipeline for EEG data.
         
@@ -127,7 +130,6 @@ class Analyzer(Thread):
             raise ValueError("No process has been to the list.")
         self.list_params = list_params
 
-
         if len(self.list_params) != len(self.list_process_string):
             raise ValueError("List of parameters must have the same length as the list of processes.")
 
@@ -140,6 +142,8 @@ class Analyzer(Thread):
 
         self.messages = None  # Messages()
 
+        self.events_interface = events_interface
+
         self.prepare_processes()
         self.initialize_interface()
 
@@ -149,13 +153,18 @@ class Analyzer(Thread):
         self.queue_in = list_queue[0]
         self.queue_out = list_queue[-1]
 
-        for i, process_name in enumerate(self.list_process_string):
-            mod = __import__('pymuse.processes', fromlist=[process_name])
-            klass = getattr(mod, process_name)
-            if self.list_params[i] is not None:
-                self.list_process.append(klass(list_queue[i], list_queue[i + 1], self.list_params[i]))
+        for i, process in enumerate(self.list_process_string):
+            if isinstance(process, str):
+                mod = __import__('pymuse.processes', fromlist=[process])
+                klass = getattr(mod, process)
+                if self.list_params[i] is not None:
+                    self.list_process.append(klass(list_queue[i], list_queue[i + 1], self.list_params[i]))
+                else:
+                    self.list_process.append(klass(list_queue[i], list_queue[i + 1]))
             else:
-                self.list_process.append(klass(list_queue[i], list_queue[i + 1]))
+                process.queue_in = list_queue[i]
+                process.queue_out = list_queue[i + 1]
+                self.list_process.append(process)
 
     def initialize_interface(self):
         pass
@@ -168,15 +177,12 @@ class Analyzer(Thread):
             self.list_process[i].start()
         super(Analyzer, self).start()
 
-    def display_alpha(self):
-        while True:
-            fft_signal = self.queue_out.get()
-            if len(fft_signal.data) != 0:
-                print np.mean(abs(fft_signal.data[:, 7:13]), axis=1)
-
     def refresh(self):
-        for i in self.processes_to_visualize:
-            process_name = self.list_process_string[i]
+        for name in self.processes_to_visualize:
+            if name == 'Raw':
+                process_name = name
+            else:
+                process_name = self.list_process_string[name]
             viewer_name = process_name + "Viewer"
             mod = __import__('pymuse.viz', fromlist=[viewer_name])
             klass = getattr(mod, viewer_name)
@@ -206,18 +212,16 @@ class Analyzer(Thread):
                 if signal.data.shape[1] < 125:
                     continue
 
-                # signal.event_related = XX
-
                 self.queue_in.put(signal, block=True, timeout=None)
 
                 # refreshing viewers
-                for k, i in enumerate(self.processes_to_visualize):
-                    process_name = self.list_process_string[i]
-                    if process_name == 'Raw':
-                        self.list_viewer[i].refresh(signal)
+                for k, name in enumerate(self.processes_to_visualize):
+                    if name == 'Raw':
+                        self.list_viewer[k].refresh(signal)
                     else:
-                        if self.list_process[i].data is not None:
-                            self.list_viewer[k].refresh(self.list_process[i].data)
+                        process_name = self.list_process_string[name]
+                        if self.list_process[process_name].data is not None:
+                            self.list_viewer[k].refresh(self.list_process[process_name].data)
 
             except KeyboardInterrupt:
                 import sys
