@@ -4,9 +4,11 @@ int motorSpeed1 = 0;
 int motorPin1 = 9;
 int motorSpeed2 = 0;
 int motorPin2 = 10;
+int pinSwitch = 2;
 
 int muse1 = 0;
 int muse2 = 0;
+int switchS = 0;
 
 void setup() {
     Serial.begin(9600);
@@ -31,9 +33,18 @@ void loop() {
           Serial.println(motorSpeed2);
         }
     }
-
-    analogWrite(motorPin1, motorSpeed1);
-    analogWrite(motorPin2, motorSpeed2);
-    delay(100);
+    
+    switchS = digitalRead(pinSwitch);
+    
+    if (switchS == HIGH) {
+      analogWrite(motorPin1, 0);
+      analogWrite(motorPin2, 0);
+      delay(100);
+      }
+     else {
+      analogWrite(motorPin1, 0);
+      analogWrite(motorPin2, 0);
+      delay(100);
+     }
     //Serial.println("Ready");
 }

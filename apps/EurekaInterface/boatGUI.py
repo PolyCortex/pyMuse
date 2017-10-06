@@ -7,13 +7,15 @@ from datetime import datetime
 import pexpect
 import serial
 import struct
+from math import exp
+
 
 from pymuse.ios import MuseIO, MuseIOError
 from pymuse.signals import MultiChannelSignal
 from pymuse.processes import Process
 from pymuse.pipeline import Analyzer
 
-MUSES = {'Muse 1': 'Muse-8BEF', 'Muse 2': 'Muse-9948', 'Muse 3': 'Muse-944A', 'Muse 4': 'Muse-7F68'}
+MUSES = {'Muse 1': 'Muse-8BEF', 'Muse 2': 'Muse-4E4E', 'Muse 3': 'Muse-944A', 'Muse 4': 'Muse-7F68'}
 
 
 class Window(QtGui.QMainWindow):
@@ -315,8 +317,14 @@ class Window(QtGui.QMainWindow):
                 dataP1 = 0.17
             if dataP2 < 0.17:
                 dataP2 = 0.17
-            valueP1 = int(100 + dataP1 * 255)
-            valueP2 = int(100 + dataP2 * 255)
+
+            # Plus on augmente la valeur d'atenuation, plus la valeur de data sera atenuee.
+            ValeurDatenuation = 0.3
+            # Atenuation est de x*e^(-0.3x) pour un facteur d'atenuation de 0.3
+            DATA1 = dataP1 * exp(-ValeurDatenuation*dataP1)
+            DATA2 = dataP2 * exp(-ValeurDatenuation * dataP2)
+            valueP1 = int(100 + DATA1 * 255)
+            valueP2 = int(100 + DATA2 * 255)
             try:
                 while self.serial_channel.in_waiting:
                     print 'Received', self.serial_channel.readline()

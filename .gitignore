@@ -62,3 +62,7 @@ apps/InterfaceP300.py
 *.user
 eeg_freq_band.py
 apps/RemoteInterfacceQT/InterfacePolyCortex.pro.user
+
+*.xml
+
+*.iml
