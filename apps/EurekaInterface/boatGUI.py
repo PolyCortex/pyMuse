@@ -8,6 +8,7 @@ import pexpect
 import serial
 import struct
 from math import exp
+import random
 
 
 from pymuse.ios import MuseIO, MuseIOError
@@ -15,7 +16,7 @@ from pymuse.signals import MultiChannelSignal
 from pymuse.processes import Process
 from pymuse.pipeline import Analyzer
 
-MUSES = {'Muse 1': 'Muse-8BEF', 'Muse 2': 'Muse-4E4E', 'Muse 3': 'Muse-944A', 'Muse 4': 'Muse-7F68'}
+MUSES = {'Muse 1': 'Muse-8BEF', 'Muse 2': 'Muse-7042', 'Muse 3': 'Muse-9957', 'Muse 4': 'Muse-4E4E'}
 
 
 class Window(QtGui.QMainWindow):
@@ -23,7 +24,7 @@ class Window(QtGui.QMainWindow):
 
     def __init__(self):
         super(Window, self).__init__()
-        self.setWindowTitle("Course de bateaux")
+        self.setWindowTitle("MindPong")
         self.home()
 
     def home(self):
@@ -31,7 +32,7 @@ class Window(QtGui.QMainWindow):
         #user32 = ctypes.windll.user32
         #user32.SetProcessDPIAware()
         #[w, h] = [user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)]
-        [w, h] = [1500, 800]
+        [w, h] = [1300, 700]
         [w_btn, h_btn] = [100, 30]
         [w_label, h_label] = [100, 30]
         # Create labels
@@ -124,7 +125,7 @@ class Window(QtGui.QMainWindow):
         self.connexion_muse_P1 = None
         self.connexion_muse_P2 = None
         self.serial_channel = None
-        self.port = '/dev/tty.usbmodem1411'  # this line must be changed depending on the computer
+        self.port = 'COM3'  # this line must be changed depending on the computer
         self.baud = 9600
 
         # Display window
@@ -284,45 +285,57 @@ class Window(QtGui.QMainWindow):
     @QtCore.pyqtSlot(float, float)
     def update_data_Ard(self, dataP1, dataP2):
         if not self.is_playing:
+            print 'APPUYER SUR PLAY'
             return
 
-        if 0.0 <= dataP1 < 0.17:
+		# random
+        if dataP1 == 1 and dataP2 == 1 :
+            dataP1 = dataP1 * 0.1*random.randrange(3, 10, 1)
+            dataP2 = dataP2 * 0.1*random.randrange(3, 10, 1)
+        # if dataP1 < 0.3:
+        #     dataP2 = dataP2 * 0.1 * random.randrange(3, 10, 1)
+        # if dataP2 < 0.3:
+        #     dataP1 = dataP1 * 0.1 * random.randrange(3, 10, 1)
+
+        if 0.0 <= dataP1 < 0.3:
             self.speed1_label.setPixmap(self.speed1_pixmap_1)
-        if 0.17 <= dataP1 < 0.33:
+        if 0.3 <= dataP1 < 0.5:
             self.speed1_label.setPixmap(self.speed1_pixmap_2)
-        if 0.33 <= dataP1 < 0.5:
+        if 0.5 <= dataP1 < 0.7:
             self.speed1_label.setPixmap(self.speed1_pixmap_3)
-        if 0.5 <= dataP1 < 0.67:
+        if 0.7 <= dataP1 < 0.8:
             self.speed1_label.setPixmap(self.speed1_pixmap_4)
-        if 0.67 <= dataP1 < 0.83:
+        if 0.8 <= dataP1 < 0.9:
             self.speed1_label.setPixmap(self.speed1_pixmap_5)
-        if 0.83 <= dataP1 <= 1:
+        if 0.9 <= dataP1 <= 1:
             self.speed1_label.setPixmap(self.speed1_pixmap_6)
 
-        if 0.0 <= dataP2 < 0.17:
+        if 0.0 <= dataP2 < 0.3:
             self.speed2_label.setPixmap(self.speed2_pixmap_1)
-        if 0.17 <= dataP2 < 0.33:
+        if 0.3 <= dataP2 < 0.5:
             self.speed2_label.setPixmap(self.speed2_pixmap_2)
-        if 0.33 <= dataP2 < 0.5:
+        if 0.5 <= dataP2 < 0.7:
             self.speed2_label.setPixmap(self.speed2_pixmap_3)
-        if 0.5 <= dataP2 < 0.67:
+        if 0.7 <= dataP2 < 0.8:
             self.speed2_label.setPixmap(self.speed2_pixmap_4)
-        if 0.67 <= dataP2 < 0.83:
+        if 0.8 <= dataP2 < 0.9:
             self.speed2_label.setPixmap(self.speed2_pixmap_5)
-        if 0.83 <= dataP2 <= 1:
+        if 0.9 <= dataP2 <= 1:
             self.speed2_label.setPixmap(self.speed2_pixmap_6)
+        print 'TOUT EST BEAU!'
 
-        if self.serial_channel is not None:
+        if self.serial_channel is not None: 
             if dataP1 < 0.17:
                 dataP1 = 0.17
             if dataP2 < 0.17:
                 dataP2 = 0.17
+			
+			# Plus on augmente la valeur d'attenuation, plus la valeur de data sera attenuee.
+            ValeurDattenuation = 0.5
 
-            # Plus on augmente la valeur d'atenuation, plus la valeur de data sera atenuee.
-            ValeurDatenuation = 0.3
-            # Atenuation est de x*e^(-0.3x) pour un facteur d'atenuation de 0.3
-            DATA1 = dataP1 * exp(-ValeurDatenuation*dataP1)
-            DATA2 = dataP2 * exp(-ValeurDatenuation * dataP2)
+            # Attenuation est de x*e^(-0.3x) pour un facteur d'attenuation de 0.3
+            DATA1 = dataP1 * exp(-ValeurDattenuation * dataP1)
+            DATA2 = dataP2 * exp(-ValeurDattenuation * dataP2)
             valueP1 = int(100 + DATA1 * 255)
             valueP2 = int(100 + DATA2 * 255)
             try:
@@ -426,8 +439,3 @@ def main():
     sys.exit(app.exec_())
 
 main()
-
-
-
-
-
