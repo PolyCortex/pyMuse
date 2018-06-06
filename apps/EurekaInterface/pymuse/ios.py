@@ -26,14 +26,15 @@ class MuseIOError(OSCError):
 
 class MuseIO():
     def __init__(self, port=5001, signal=None):
-        self.signal = signal
+        self.signal = signal        # Where signal is a dictionnary of (key, MultiChannelSignal)
         self.port = port
         self.udp_ip = '127.0.0.1'
 
         if not has_oscserver:
             raise Exception('ERROR: OSC not found')
-
+            
         self.server = OSCServer((self.udp_ip, self.port))
+        self.server.print_tracebacks = True
         self.server.timeout = 0
         self.current_sample_id = 0
         self.init_time = None
@@ -46,22 +47,25 @@ class MuseIO():
         if 'eeg' in self.signal:
             self.server.addMsgHandler('/muse/eeg', self.callback_eeg_raw)
         if 'concentration' in self.signal:
-            self.server.addMsgHandler('/muse/elements/experimental/concentration', self.callback_concentration)
+            self.server.addMsgHandler('/muse/elements/beta_relative/', self.callback_concentration)
         if 'mellow' in self.signal:
             self.server.addMsgHandler('/muse/elements/experimental/mellow', self.callback_mellow)
         self.server.addMsgHandler("default", self.default_handler)
 
-    def default_handler(self, addr, tags, stuff, source):
+    def default_handler(self, path, tags, source, args):
         # nothing to do here. This function is called for all messages that are not supported by the application.
         #print "SERVER: No handler registered for ", addr
+        #print('DEFAULT_HANDLER','path: ', path, '\n tags: ', tags, '\n args: ', args, '\n source: ', source)
         return None
 
-    def callback_eeg_raw(self, path, tags, args, source):
+    def callback_eeg_raw(self, path, tags, source, args):
         # which user will be determined by path:
         # we just throw away all slashes and join together what's left
         # tags will contain 'ffff'
         # args is a OSCMessage with data
         # source is where the message came from (in case you need to reply)
+        print('callback_eeg_raw','path: ', path, '\n tags: ', tags, '\n args: ', args, '\n source: ', source)
+
         self.signal['eeg'].lock.acquire()
         self.signal['eeg'].id = self.current_sample_id
         self.signal['eeg'].add_data(args, add_time=False)
@@ -71,6 +75,7 @@ class MuseIO():
 
     def callback_concentration(self, path, tags, args, source):
         if 'concentration' in self.signal:
+            print('CONCENTRATION', 'path: ', path, '\n tags: ', tags, '\n args: ', args, '\n source: ', source)
             self.signal['concentration'].lock.acquire()
             self.signal['concentration'].id = self.current_sample_id
             self.signal['concentration'].add_data(args, add_time=False)
@@ -80,6 +85,7 @@ class MuseIO():
 
     def callback_mellow(self, path, tags, args, source):
         if 'mellow' in self.signal:
+            print('MELLOW', 'path: ', path, '\n tags: ', tags, '\n args: ', args, '\n source: ', source)
             self.signal['mellow'].lock.acquire()
             self.signal['mellow'].id = self.current_sample_id
             self.signal['mellow'].add_data(args, add_time=False)

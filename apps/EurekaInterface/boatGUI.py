@@ -125,7 +125,7 @@ class Window(QtGui.QMainWindow):
         self.connexion_muse_P1 = None
         self.connexion_muse_P2 = None
         self.serial_channel = None
-        self.port = 'COM3'  # this line must be changed depending on the computer
+        self.port = 'COM1'  # arduino port, this line must be changed depending on the computer
         self.baud = 9600
 
         # Display window
@@ -195,7 +195,7 @@ class Window(QtGui.QMainWindow):
         cmd = 'muse-io --osc osc.udp://localhost:5001 --device ' + muse_P1
         #cmd = ['muse-io', '--osc', 'osc.udp://localhost:5001', '--device', muse_P1]
         print cmd
-        """
+        """ pexpect n'est disponible que sur Linux/Unix...
         try:
             import subprocess
             #self.connexion_muse_P1 = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -288,15 +288,6 @@ class Window(QtGui.QMainWindow):
             print 'APPUYER SUR PLAY'
             return
 
-		# random
-        if dataP1 == 1 and dataP2 == 1 :
-            dataP1 = dataP1 * 0.1*random.randrange(3, 10, 1)
-            dataP2 = dataP2 * 0.1*random.randrange(3, 10, 1)
-        # if dataP1 < 0.3:
-        #     dataP2 = dataP2 * 0.1 * random.randrange(3, 10, 1)
-        # if dataP2 < 0.3:
-        #     dataP1 = dataP1 * 0.1 * random.randrange(3, 10, 1)
-
         if 0.0 <= dataP1 < 0.3:
             self.speed1_label.setPixmap(self.speed1_pixmap_1)
         if 0.3 <= dataP1 < 0.5:
@@ -338,11 +329,11 @@ class Window(QtGui.QMainWindow):
             DATA2 = dataP2 * exp(-ValeurDattenuation * dataP2)
             valueP1 = int(100 + DATA1 * 255)
             valueP2 = int(100 + DATA2 * 255)
-            try:
+            try: #Here we only wanna send data no read...
                 while self.serial_channel.in_waiting:
                     print 'Received', self.serial_channel.readline()
                 print 'Sending', valueP1, valueP2
-                self.serial_channel.write(str(valueP1)+str(valueP2))  # between 100 and 355
+                #self.serial_channel.write(str(valueP1)+str(valueP2))  # between 100 and 355, this line will wait until message is effectively written on channel.
                 time.sleep(1)
             except Exception as e:
                 print 'Error when sending data to boat P1:', str(e)
@@ -387,7 +378,7 @@ def run_server(gui=None, port=5001, player_signal=None):
     if player_signal is None:
         signal_concentration = MultiChannelSignal(length=300,
                                                   estimated_acquisition_freq=10.0,
-                                                  label_channels=['Concentration'])
+                                                  label_channels=['Concentration', '1', '2', '3'])
     else:
         signal_concentration = player_signal
 
@@ -420,11 +411,11 @@ def main():
 
     signal_concentration_P1 = MultiChannelSignal(length=300,
                                                  estimated_acquisition_freq=10.0,
-                                                 label_channels=['Concentration'])
+                                                 label_channels=['Concentration', '1', '2', '3'])
 
     signal_concentration_P2 = MultiChannelSignal(length=300,
                                                  estimated_acquisition_freq=10.0,
-                                                 label_channels=['Concentration'])
+                                                 label_channels=['0', '1', '2', '3'])
 
     run_server(gui=gui, port=5001, player_signal=signal_concentration_P1)
     run_server(gui=gui, port=5002, player_signal=signal_concentration_P2)
