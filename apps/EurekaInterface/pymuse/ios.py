@@ -64,8 +64,6 @@ class MuseIO():
         # tags will contain 'ffff'
         # args is a OSCMessage with data
         # source is where the message came from (in case you need to reply)
-        print('callback_eeg_raw','path: ', path, '\n tags: ', tags, '\n args: ', args, '\n source: ', source)
-
         self.signal['eeg'].lock.acquire()
         self.signal['eeg'].id = self.current_sample_id
         self.signal['eeg'].add_data(args, add_time=False)
@@ -85,7 +83,6 @@ class MuseIO():
 
     def callback_mellow(self, path, tags, args, source):
         if 'mellow' in self.signal:
-            print('MELLOW', 'path: ', path, '\n tags: ', tags, '\n args: ', args, '\n source: ', source)
             self.signal['mellow'].lock.acquire()
             self.signal['mellow'].id = self.current_sample_id
             self.signal['mellow'].add_data(args, add_time=False)

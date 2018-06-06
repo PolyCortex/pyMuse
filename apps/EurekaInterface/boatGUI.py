@@ -9,6 +9,7 @@ import serial
 import struct
 from math import exp
 import random
+import numpy as np
 
 
 from pymuse.ios import MuseIO, MuseIOError
@@ -288,30 +289,34 @@ class Window(QtGui.QMainWindow):
             print 'APPUYER SUR PLAY'
             return
 
-        if 0.0 <= dataP1 < 0.3:
+        if 0.0 <= dataP1 < 0.1:
+            self.speed1_label.setPixmap(self.speed1_pixmap)
+        if 0.1 <= dataP1 < 0.2:
             self.speed1_label.setPixmap(self.speed1_pixmap_1)
-        if 0.3 <= dataP1 < 0.5:
+        if 0.2 <= dataP1 < 0.3:
             self.speed1_label.setPixmap(self.speed1_pixmap_2)
-        if 0.5 <= dataP1 < 0.7:
+        if 0.3 <= dataP1 < 0.45:
             self.speed1_label.setPixmap(self.speed1_pixmap_3)
-        if 0.7 <= dataP1 < 0.8:
+        if 0.45 <= dataP1 < 0.7:
             self.speed1_label.setPixmap(self.speed1_pixmap_4)
-        if 0.8 <= dataP1 < 0.9:
+        if 0.7 <= dataP1 <= 0.8:
             self.speed1_label.setPixmap(self.speed1_pixmap_5)
-        if 0.9 <= dataP1 <= 1:
+        if 0.8 <= dataP1 <= 1:
             self.speed1_label.setPixmap(self.speed1_pixmap_6)
 
-        if 0.0 <= dataP2 < 0.3:
+        if 0.0 <= dataP2 < 0.1:
+            self.speed2_label.setPixmap(self.speed2_pixmap)
+        if 0.1 <= dataP2 < 0.2:
             self.speed2_label.setPixmap(self.speed2_pixmap_1)
-        if 0.3 <= dataP2 < 0.5:
+        if 0.2 <= dataP2 < 0.3:
             self.speed2_label.setPixmap(self.speed2_pixmap_2)
-        if 0.5 <= dataP2 < 0.7:
+        if 0.3 <= dataP2 < 0.45:
             self.speed2_label.setPixmap(self.speed2_pixmap_3)
-        if 0.7 <= dataP2 < 0.8:
+        if 0.45 <= dataP2 < 0.7:
             self.speed2_label.setPixmap(self.speed2_pixmap_4)
-        if 0.8 <= dataP2 < 0.9:
+        if 0.7 <= dataP2 <= 0.8:
             self.speed2_label.setPixmap(self.speed2_pixmap_5)
-        if 0.9 <= dataP2 <= 1:
+        if 0.8 <= dataP2 <= 1:
             self.speed2_label.setPixmap(self.speed2_pixmap_6)
         print 'TOUT EST BEAU!'
 
@@ -354,13 +359,15 @@ def update_data(update_frequency=20.0, gui=None, signal_P1=None, signal_P2=None)
 
                 if signal_P1.lock is not None:
                     signal_P1.lock.acquire()
-                dP1 = signal_P1.data[0, -1]
+                #dP1 = signal_P1.data[0, -1]
+                dP1 = np.nanmean(signal_P1.data[:,-1])
                 if signal_P1.lock is not None:
                     signal_P1.lock.release()
 
                 if signal_P2.lock is not None:
                     signal_P2.lock.acquire()
-                dP2 = signal_P2.data[0, -1]
+                #dP2 = signal_P2.data[0, -1]
+                dP2 = np.nanmean(signal_P2.data[:,-1])
                 if signal_P2.lock is not None:
                     signal_P2.lock.release()
 
@@ -378,7 +385,7 @@ def run_server(gui=None, port=5001, player_signal=None):
     if player_signal is None:
         signal_concentration = MultiChannelSignal(length=300,
                                                   estimated_acquisition_freq=10.0,
-                                                  label_channels=['Concentration', '1', '2', '3'])
+                                                  label_channels=['0', '1', '2', '3'])
     else:
         signal_concentration = player_signal
 
@@ -411,7 +418,7 @@ def main():
 
     signal_concentration_P1 = MultiChannelSignal(length=300,
                                                  estimated_acquisition_freq=10.0,
-                                                 label_channels=['Concentration', '1', '2', '3'])
+                                                 label_channels=['0', '1', '2', '3'])
 
     signal_concentration_P2 = MultiChannelSignal(length=300,
                                                  estimated_acquisition_freq=10.0,
