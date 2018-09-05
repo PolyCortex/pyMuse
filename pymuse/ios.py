@@ -46,7 +46,7 @@ class MuseIO():
         if 'eeg' in self.signal:
             self.server.addMsgHandler('/muse/eeg', self.callback_eeg_raw)
         if 'concentration' in self.signal:
-            self.server.addMsgHandler('/muse/elements/experimental/concentration', self.callback_concentration)
+            self.server.addMsgHandler('/muse/elements/beta_relative/', self.callback_concentration)
         if 'mellow' in self.signal:
             self.server.addMsgHandler('/muse/elements/experimental/mellow', self.callback_mellow)
         self.server.addMsgHandler("default", self.default_handler)
