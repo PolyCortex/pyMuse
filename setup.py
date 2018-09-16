@@ -31,10 +31,8 @@ setup(
 
     keywords='muse polycortex fft eeg openbci',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-
-    install_requires=['matplotlib', 'scipy', 'numpy', 'pyserial'],
-    dependency_links=['https://github.com/ptone/pyosc/tarball/master#egg=package-1.0'],
-
+    install_requires=['matplotlib', 'pyserial', 'pyosc', 'numpy', 'scipy'],
+    
     entry_points={
         'console_scripts': [
             'eeg_display=eeg_display:main',

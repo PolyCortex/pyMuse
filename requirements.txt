@@ -1,0 +1,7 @@
+--index-url https://pypi.python.org/simple/
+
+matplotlib
+pyserial
+numpy
+scipy
+https://github.com/ptone/pyosc/tarball/master
