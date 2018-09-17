@@ -4,4 +4,4 @@ matplotlib
 pyserial
 numpy
 scipy
-https://github.com/ptone/pyosc/tarball/master
+https://github.com/ptone/pyosc/archive/master.zip
