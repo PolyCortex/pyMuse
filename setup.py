@@ -32,7 +32,6 @@ setup(
     keywords='muse polycortex fft eeg openbci',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     install_requires=['matplotlib', 'pyserial', 'pyosc>=0.3.6', 'numpy', 'scipy'],
-    dependency_links=['https://github.com/ptone/pyosc/archive/master.zip#egg=pyosc-0.3.6.post6382'],
     
     entry_points={
         'console_scripts': [
