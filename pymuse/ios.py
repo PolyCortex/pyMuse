@@ -11,7 +11,7 @@ import time
 import timeit
 import sys
 from datetime import datetime, timedelta
-from constants import DEFAULT_MUSEIO_IP, DEFAULT_MUSEIO_PORT, DEFAULT_FREQ, DEFAULT_UDPIO_IP, DEFAULT_UDPIO_PORT
+from constants import *
 
 
 # this method of reporting timeouts only works by convention
@@ -88,7 +88,7 @@ class MuseIO():
 
 
 class UDPIO(object):
-    def __init__(self, freq=DEFAULT_FREQ, udp_ip=DEFAULT_UDPIO_IP, udp_port=DEFAULT_UDPIO_PORT, index_channels=None, signal=None, channels=None):
+    def __init__(self, freq=DEFAULT_FREQ, udp_ip=DEFAULT_IP, udp_port=DEFAULT_PORT, index_channels=None, signal=None, channels=None):
         self.signal = signal
 
         self.udp_ip = udp_ip
