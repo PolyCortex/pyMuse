@@ -1,6 +1,6 @@
 from pythonosc import dispatcher, osc_server
 from datetime import datetime
-from signal import Signal
+from signal import Signal, SignalData
 from muse_constants import ( 
     DEFAULT_MUSE_EEG_ACQUISITION_FREQUENCY, 
     DEFAULT_MUSE_BATT_ACQUISITION_FREQUENCY,
@@ -13,8 +13,10 @@ from constants import (
     DEFAULT_SIGNAL_QUEUE_LENGTH,
 )
 
-class MuseInputStream():
-    def __init__(self, sought_data_list = ['eeg'], port = DEFAULT_PORT, ip = LOCALHOST):
+class MuseInputStreamWrapper():
+    signals: dict
+
+    def __init__(self, sought_data_list: list<str> = ['eeg'], port: int = DEFAULT_PORT, ip: str = LOCALHOST):
         self.signals = dict()
         disp = dispatcher.Dispatcher()
         for sought_data in sought_data_list:
@@ -22,13 +24,16 @@ class MuseInputStream():
         server = osc_server.ThreadingOSCUDPServer((ip, port), disp)
         server.serve_forever()
 
-    def callback(self, *args):
-        data = {'values': [], 'time': 0}
-        signal_name = args[-1]
-        acquisition_frequency = args[-2]
-        for arg in args[0:-2]:
+    def callback(self, osc_path, *registeredParams, *messages):
+        data: SignalData = SignalData([], 0)
+        acquisition_frequency = registeredParams[0]
+        signal_name = registeredParams[1]
+        for message in messages[2:]:
             if(signal_name not in self.signals):
                 self.signals[signal_name] = Signal(DEFAULT_SIGNAL_QUEUE_LENGTH, acquisition_frequency)
-            data['values'].append(arg)
-        data['time'] = datetime.now() - self.signals[signal_name].init_time
+            data.values.append(message)
+        data.time = datetime.now() - self.signals[signal_name].init_time
         self.signals[signal_name].push(data)
+
+    def get(self, signal_name: str):
+        return self.signals[signal_name].pop()
