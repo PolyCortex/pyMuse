@@ -20,18 +20,18 @@ class InputStreamTest(unittest.TestCase):
             client.send_message(MUSE_OSC_PATH[sought_data], data)
             time.sleep(1 / MUSE_ACQUISITION_FREQUENCIES[sought_data])
 
-    def pop_messages(self, messages: list, sought_data: str):
+    def read_messages(self, messages: list, signal_name: str):
         for index, message in enumerate(messages):
-            time: int = index * (1 / MUSE_ACQUISITION_FREQUENCIES[sought_data])
+            time: int = index * (1 / MUSE_ACQUISITION_FREQUENCIES[signal_name])
             expected_signal_data: SignalData = SignalData(time, message)
-            self.assertEqual(self.muse_input_stream.pop(sought_data), expected_signal_data)
+            self.assertEqual(self.muse_input_stream.read(signal_name), expected_signal_data)
 
-    def test_pop(self):
+    def test_read(self):
         self.muse_input_stream: MuseInputStream = MuseInputStream(SOUGHT_DATA_LIST, '127.0.0.1', 5000)
         Thread(self.create_client(SOUGHT_DATA_LIST[0], EEG_MESSAGES_LIST)).start()
         Thread(self.create_client(SOUGHT_DATA_LIST[1], TOUCHING_FOREHEAD_MESSAGES_LIST)).start()
-        self.pop_messages(EEG_MESSAGES_LIST, SOUGHT_DATA_LIST[0])
-        self.pop_messages(TOUCHING_FOREHEAD_MESSAGES_LIST, SOUGHT_DATA_LIST[1])
+        self.read_messages(EEG_MESSAGES_LIST, SOUGHT_DATA_LIST[0])
+        self.read_messages(TOUCHING_FOREHEAD_MESSAGES_LIST, SOUGHT_DATA_LIST[1])
         self.muse_input_stream.close()
 
 if __name__ == '__main__':

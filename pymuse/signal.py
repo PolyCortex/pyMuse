@@ -12,7 +12,6 @@ class SignalData():
         return self.time < other.time
 
 class Signal():
-    lock: Lock
     signal_queue: PriorityQueue
     signal_period: float
     data_counter: int
