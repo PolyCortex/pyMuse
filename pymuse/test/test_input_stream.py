@@ -1,33 +1,38 @@
 import random
 import time
 import unittest
-import unittest.mock
+from threading import Thread
 from pythonosc import udp_client
 from signal import SignalData
 from input_stream import MuseInputStream
-from muse_constants import MUSE_EEG_ACQUISITION_FREQUENCY
+from muse_constants import MUSE_ACQUISITION_FREQUENCIES, MUSE_OSC_PATH
 
-MESSAGES_NUMBER = 16
-MUSE_ACQUISITION_PERIOD = 1 / MUSE_EEG_ACQUISITION_FREQUENCY
+SOUGHT_DATA_LIST: list = ['eeg', 'touching_forehead']
+EEG_MESSAGES_LIST: list  = [(0, 1, 2, 3), (50, 51, 52, 53), (100, 101, 102, 103), (200, 201, 202, 203), (252, 253, 254, 255)]
+TOUCHING_FOREHEAD_MESSAGES_LIST: list = [(0, ), (1, )]
 
 class InputStreamTest(unittest.TestCase):
-    def create_random_list(self):
-        return random.sample(range(255), MESSAGES_NUMBER) 
+    muse_input_stream: MuseInputStream
 
-    def create_client(self, sent_data: list):
-        client = udp_client.SimpleUDPClient('127.0.0.1', 5001)
+    def create_client(self, sought_data: str, sent_data: list) -> udp_client.SimpleUDPClient: 
+        client = udp_client.SimpleUDPClient('127.0.0.1', 5000)
         for data in sent_data:
-            client.send_message("/eeg", data)
-            time.sleep(MUSE_ACQUISITION_PERIOD)
+            client.send_message(MUSE_OSC_PATH[sought_data], data)
+            time.sleep(1 / MUSE_ACQUISITION_FREQUENCIES[sought_data])
+
+    def pop_messages(self, messages: list, sought_data: str):
+        for index, message in enumerate(messages):
+            time: int = index * (1 / MUSE_ACQUISITION_FREQUENCIES[sought_data])
+            expected_signal_data: SignalData = SignalData(time, message)
+            self.assertEqual(self.muse_input_stream.pop(sought_data), expected_signal_data)
 
     def test_pop(self):
-        random_bytes = self.create_random_list()
-        sought_data_list = ['eeg']
-        muse_input_stream = MuseInputStream(sought_data_list, '127.0.0.1', 5001)
-        self.create_client(random_bytes)
-        for i in range(MESSAGES_NUMBER):
-            self.assertEqual(muse_input_stream.pop('eeg'), SignalData(i * MUSE_ACQUISITION_PERIOD, random_bytes[i]))
-        muse_input_stream.close()
+        self.muse_input_stream: MuseInputStream = MuseInputStream(SOUGHT_DATA_LIST, '127.0.0.1', 5000)
+        Thread(self.create_client(SOUGHT_DATA_LIST[0], EEG_MESSAGES_LIST)).start()
+        Thread(self.create_client(SOUGHT_DATA_LIST[1], TOUCHING_FOREHEAD_MESSAGES_LIST)).start()
+        self.pop_messages(EEG_MESSAGES_LIST, SOUGHT_DATA_LIST[0])
+        self.pop_messages(TOUCHING_FOREHEAD_MESSAGES_LIST, SOUGHT_DATA_LIST[1])
+        self.muse_input_stream.close()
 
 if __name__ == '__main__':
     unittest.main()

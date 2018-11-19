@@ -19,7 +19,7 @@ class MuseInputStream():
         self._server = osc_server.ThreadingOSCUDPServer((ip, port), self._create_dispatchers(sought_data_list))
         Thread(target=self._server.serve_forever).start()
 
-    def _callback(self, osc_path, opt_params, signal_data):
+    def _callback(self, osc_path, opt_params, *signal_data):
         signal_name = opt_params[0]
         self._signals[signal_name].push(signal_data)
 
