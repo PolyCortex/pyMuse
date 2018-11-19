@@ -1,39 +1,38 @@
-from pythonosc import dispatcher, osc_server
 from datetime import datetime
 from signal import Signal, SignalData
-from muse_constants import ( 
-    DEFAULT_MUSE_EEG_ACQUISITION_FREQUENCY, 
-    DEFAULT_MUSE_BATT_ACQUISITION_FREQUENCY,
-    MUSE_OSC_PATH,
+from threading import Thread
+from pythonosc import dispatcher, osc_server
+from constants import DEFAULT_PORT, LOCALHOST, SIGNAL_QUEUE_LENGTH
+from muse_constants import (
     MUSE_ACQUISITION_FREQUENCIES,
-)
-from constants import ( 
-    DEFAULT_PORT, 
-    LOCALHOST,
-    DEFAULT_SIGNAL_QUEUE_LENGTH,
+    MUSE_BATT_ACQUISITION_FREQUENCY,
+    MUSE_EEG_ACQUISITION_FREQUENCY,
+    MUSE_OSC_PATH,
 )
 
-class MuseInputStreamWrapper():
-    signals: dict
+class MuseInputStream():
+    _signals: dict
+    _server: osc_server.ThreadingOSCUDPServer
 
-    def __init__(self, sought_data_list: list<str> = ['eeg'], port: int = DEFAULT_PORT, ip: str = LOCALHOST):
-        self.signals = dict()
+    def __init__(self, sought_data_list: list = ['eeg'], ip: str = LOCALHOST, port: int = DEFAULT_PORT):
+        self._signals = dict()
+        self._server = osc_server.ThreadingOSCUDPServer((ip, port), self._create_dispatchers(sought_data_list))
+        Thread(target=self._server.serve_forever).start()
+
+    def _callback(self, osc_path, opt_params, signal_data):
+        signal_name = opt_params[0]
+        self._signals[signal_name].push(signal_data)
+
+    def _create_dispatchers(self, sought_data_list) -> dispatcher.Dispatcher:
         disp = dispatcher.Dispatcher()
         for sought_data in sought_data_list:
-            disp.map(MUSE_OSC_PATH[sought_data], self.callback, MUSE_ACQUISITION_FREQUENCIES[sought_data], sought_data)
-        server = osc_server.ThreadingOSCUDPServer((ip, port), disp)
-        server.serve_forever()
+            if(sought_data not in self._signals):
+                self._signals[sought_data] = Signal(SIGNAL_QUEUE_LENGTH, MUSE_ACQUISITION_FREQUENCIES[sought_data])
+            disp.map(MUSE_OSC_PATH[sought_data], self._callback, sought_data)
+        return disp
 
-    def callback(self, osc_path, *registeredParams, *messages):
-        data: SignalData = SignalData([], 0)
-        acquisition_frequency = registeredParams[0]
-        signal_name = registeredParams[1]
-        for message in messages[2:]:
-            if(signal_name not in self.signals):
-                self.signals[signal_name] = Signal(DEFAULT_SIGNAL_QUEUE_LENGTH, acquisition_frequency)
-            data.values.append(message)
-        data.time = datetime.now() - self.signals[signal_name].init_time
-        self.signals[signal_name].push(data)
+    def pop(self, signal_name: str) -> SignalData:
+        return self._signals[signal_name].pop()
 
-    def get(self, signal_name: str):
-        return self.signals[signal_name].pop()
+    def close(self):
+        self._server.shutdown()

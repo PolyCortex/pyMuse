@@ -8,6 +8,8 @@ __pycache__/
 .idea/*
 .vscode/*
 
+settings.json
+
 # Distribution / packaging
 .Python
 env/
