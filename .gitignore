@@ -66,3 +66,5 @@ apps/RemoteInterfacceQT/InterfacePolyCortex.pro.user
 *.xml
 
 *.iml
+
+*.DS_Store

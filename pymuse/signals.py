@@ -28,8 +28,7 @@ class Signal(object):
 
     def add_time(self, diff=None):
         if diff is None:
-            diff = datetime.now() - self.init_time
-            diff = diff.total_seconds()
+            diff = (datetime.now() - self.init_time).total_seconds()
         self.time = np.roll(self.time, -1)
         self.time[-1] = float(diff * 1000.0)  # in milliseconds
 
