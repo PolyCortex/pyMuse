@@ -1,9 +1,9 @@
 from datetime import datetime
-from signal import Signal, SignalData
 from threading import Thread
 from pythonosc import dispatcher, osc_server
-from constants import DEFAULT_PORT, LOCALHOST, SIGNAL_QUEUE_LENGTH
-from muse_constants import (
+from pymuse.signal import Signal, SignalData
+from pymuse.constants import DEFAULT_PORT, LOCALHOST, SIGNAL_QUEUE_LENGTH
+from pymuse.muse_constants import (
     MUSE_ACQUISITION_FREQUENCIES,
     MUSE_BATT_ACQUISITION_FREQUENCY,
     MUSE_EEG_ACQUISITION_FREQUENCY,

@@ -3,9 +3,9 @@ import time
 import unittest
 from threading import Thread
 from pythonosc import udp_client
-from signal import SignalData
-from input_stream import MuseInputStream
-from muse_constants import MUSE_ACQUISITION_FREQUENCIES, MUSE_OSC_PATH
+from pymuse.signal import SignalData
+from pymuse.input_stream import MuseInputStream
+from pymuse.muse_constants import MUSE_ACQUISITION_FREQUENCIES, MUSE_OSC_PATH
 
 SOUGHT_DATA_LIST: list = ['eeg', 'touching_forehead']
 EEG_MESSAGES_LIST: list  = [(0, 1, 2, 3), (50, 51, 52, 53), (100, 101, 102, 103), (200, 201, 202, 203), (252, 253, 254, 255)]
