@@ -22,10 +22,10 @@ class Signal():
         self._data_counter = 0
 
     def push(self, data_list: list):
-        time = self.data_counter * self.signal_period
+        time = self._data_counter * self._signal_period
         signal_data: SignalData = SignalData(time, data_list)
-        self._signal_queue.put(signal_data, True, self.signal_period)
+        self._signal_queue.put(signal_data, True, self._signal_period)
         self._data_counter += 1
     
     def pop(self) -> SignalData:
-        return self.signal_queue.get(True)
+        return self._signal_queue.get(True)
