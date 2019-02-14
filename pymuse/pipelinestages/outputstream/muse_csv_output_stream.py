@@ -3,7 +3,7 @@ from pymuse.pipelinestages.pipeline_stage import PipelineStage
 
 class MuseCSVOutputStream(PipelineStage):
     def __init__(self):
-        pass
+        super().__init__()
 
     def run(self): # Pour l'instant, ce sera une étape bidon du pipeline qui ne fait que mettre les résultats sur la sortie standard.
         while(True):
