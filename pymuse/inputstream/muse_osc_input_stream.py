@@ -10,13 +10,13 @@ from pymuse.inputstream.muse_constants import (
     MUSE_OSC_PATH,
 )
 
+
 class MuseOSCInputStream():
-    _signals: dict
-    _server: osc_server.ThreadingOSCUDPServer
 
     def __init__(self, signal_name_list: list = ['eeg'], ip: str = LOCALHOST, port: int = DEFAULT_UDP_PORT):
-        self._signals = dict()
-        self._server = osc_server.ThreadingOSCUDPServer((ip, port), self._create_dispatchers(signal_name_list))
+        self._signals: dict = dict()
+        self._server: osc_server.ThreadingOSCUDPServer = osc_server.ThreadingOSCUDPServer(
+            (ip, port), self._create_dispatchers(signal_name_list))
 
     def _callback(self, osc_path, opt_params, *signal_data):
         signal_name = opt_params[0]
@@ -26,7 +26,8 @@ class MuseOSCInputStream():
         disp = dispatcher.Dispatcher()
         for signal_name in signal_name_list:
             if(signal_name not in self._signals):
-                self._signals[signal_name] = Signal(SIGNAL_QUEUE_LENGTH, MUSE_ACQUISITION_FREQUENCIES[signal_name])
+                self._signals[signal_name] = Signal(
+                    SIGNAL_QUEUE_LENGTH, MUSE_ACQUISITION_FREQUENCIES[signal_name])
             disp.map(MUSE_OSC_PATH[signal_name], self._callback, signal_name)
         return disp
 

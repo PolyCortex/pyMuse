@@ -12,7 +12,8 @@ EEG_MESSAGES_LIST: list  = [(0, 1, 2, 3), (50, 51, 52, 53), (100, 101, 102, 103)
 TOUCHING_FOREHEAD_MESSAGES_LIST: list = [(0, ), (1, )]
 
 class InputStreamTest(unittest.TestCase):
-    muse_input_stream: MuseOSCInputStream
+    def __init__(self):
+        self.muse_input_stream: MuseOSCInputStream = None
 
     def create_client(self, sought_data: str, sent_data: list) -> udp_client.SimpleUDPClient: 
         client = udp_client.SimpleUDPClient('127.0.0.1', 5000)
