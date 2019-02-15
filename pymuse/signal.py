@@ -20,6 +20,10 @@ class Signal():
         self._signal_period: float = (1 / acquisition_frequency)
         self._data_counter: int = 0
 
+    @property
+    def signal_queue(self) -> PriorityQueue:
+        return self._signal_queue
+
     def push(self, data_list: list):
         time = self._data_counter * self._signal_period
         signal_data: SignalData = SignalData(time, data_list)

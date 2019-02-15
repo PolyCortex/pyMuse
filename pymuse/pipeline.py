@@ -6,14 +6,15 @@ from pymuse.constants import PIPELINE_QUEUE_SIZE
 
 class PipelineFork():
     def __init__(self, *branches):
-        self.forked_branches: list[list] = branches
+        self.forked_branches: list = branches
 
 class Pipeline():
 
     def __init__(self, input_signal: Signal, *stages):
         self._input_signal = input_signal
-        self._stages: list[PipelineStage] = list(stages)
+        self._stages: list = list(stages)
         self._link_stages(self._stages)
+        self._stages[0]._queue_in = self._input_signal.signal_queue
 
     def _link_pipeline_fork (self, stages: list, index: int):
             for i, fork in enumerate(stages[index].forked_branches):
@@ -33,7 +34,7 @@ class Pipeline():
         for stage in stages:
             if type(stage) == PipelineFork:
                 for forked_branch in stage.forked_branches:
-                    self.start(forked_branch)
+                    self._start(forked_branch)
             else:
                 stage.start()
 

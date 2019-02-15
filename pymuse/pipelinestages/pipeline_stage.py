@@ -10,7 +10,7 @@ class PipelineStage(ABC, Thread):
     def __init__(self):
         super().__init__()
         self._queue_in: Queue = Queue(PIPELINE_QUEUE_SIZE)
-        self._queues_out: list[Queue] = []
+        self._queues_out: list = []
 
     @property
     def queue_in(self) -> Queue:
