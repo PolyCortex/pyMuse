@@ -6,8 +6,11 @@ from pymuse.constants import PIPELINE_QUEUE_SIZE
 
 class PipelineFork():
     def __init__(self, *branches):
-        self.forked_branches: list = branches
+        self.forked_branches: list = list(branches)
 
+"""
+E.g.: Pipeline(museOSCInputStream.get_signal("eeg"), AStage("1"), PipelineFork([AStage("2"), MuseCSVOutputStream()], [AStage("3")] ))
+"""
 class Pipeline():
 
     def __init__(self, input_signal: Signal, *stages):
@@ -17,7 +20,7 @@ class Pipeline():
         self._stages[0]._queue_in = self._input_signal.signal_queue
 
     def _link_pipeline_fork (self, stages: list, index: int):
-            for i, fork in enumerate(stages[index].forked_branches):
+            for fork in stages[index].forked_branches:
                 stages[index - 1].add_queue_out(fork[0].queue_in)
                 self._link_stages(fork)
 
