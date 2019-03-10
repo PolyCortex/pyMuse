@@ -19,5 +19,9 @@ class PipelineStage(ABC, Thread):
     def add_queue_out(self, queue: Queue):
         self._queues_out.append(queue)
 
+    def _write_queues_out(self, data):
+        for queue_out in self._queues_out:
+            queue_out.put(data)
+
     def run(self):
         pass
