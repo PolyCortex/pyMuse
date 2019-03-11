@@ -1,4 +1,5 @@
 from threading import Thread
+
 from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from pymuse.signal import Signal, SignalData
@@ -8,7 +9,6 @@ from pymuse.inputstream.muse_constants import (
     MUSE_OSC_PATH,
 )
 
-from time import time
 
 class MuseOSCInputStream():
 
@@ -16,10 +16,8 @@ class MuseOSCInputStream():
         self._signals: dict = dict()
         self._server: ThreadingOSCUDPServer = ThreadingOSCUDPServer(
             (ip, port), self._create_dispatchers(signal_name_list))
-        self.start_time = time()
 
     def _callback(self, osc_path, opt_params, *signal_data):
-        print(time() - self.start_time)
         signal_name = opt_params[0]
         self._signals[signal_name].push(signal_data)
 

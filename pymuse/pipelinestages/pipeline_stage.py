@@ -1,6 +1,7 @@
 from abc import ABC
 from queue import Queue
 from threading import Thread
+from copy import deepcopy
 
 from pymuse.constants import PIPELINE_QUEUE_SIZE
 
@@ -21,7 +22,7 @@ class PipelineStage(ABC, Thread):
 
     def _write_queues_out(self, data):
         for queue_out in self._queues_out:
-            queue_out.put(data)
+            queue_out.put(deepcopy(data))
 
     def run(self):
         pass
