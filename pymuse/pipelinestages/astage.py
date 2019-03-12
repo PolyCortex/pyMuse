@@ -1,18 +1,17 @@
-from csv import writer, QUOTE_MINIMAL
 from pymuse.pipelinestages.pipeline_stage import PipelineStage
-import time
-from pymuse.signal import SignalData
 from queue import Queue
+import time
 
 class AStage(PipelineStage):
-    def __init__(self, aname):
-        self.aname = aname
+    def __init__(self):
+        self.output_queue = Queue()
         super().__init__()
 
-    def run(self): # Pour l'instant, ce sera une étape bidon du pipeline qui ne fait que relayer vers la prochaine étape
-        print('AStage Forked! ', self.aname)
+    def run(self): # Pour l'instant, ce sera une étape bidon du pipeline qui ne fait que mettre les résultats sur la sortie standard.
+        print('Astage Forked!')
+
         time_val = time.time()
-        for _ in range(256*4):
+        for _ in range(256*3):
             data = self._queue_in.get()
-            self._write_queues_out(data)
-        print("AStage " + self.aname + " exec time: " + str(time.time() - time_val))
+            self.output_queue.put(data)
+        print("Exec time of MuseCSVOutputStream "+ str(time.time() - time_val))

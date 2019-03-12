@@ -9,7 +9,7 @@ class PipelineFork():
         self.forked_branches: list = list(branches)
 
 """
-E.g.: Pipeline(museOSCInputStream.get_signal("eeg"), AStage("1"), PipelineFork([AStage("2"), MuseCSVOutputStream()], [AStage("3")] ))
+E.g.: Pipeline(Signal(), PipelineStage(), PipelineFork([PipelineStage(), PipelineStage()], [PipelineStage()] ))
 """
 class Pipeline():
 
@@ -43,3 +43,7 @@ class Pipeline():
 
     def start(self):
         self._start(self._stages)
+
+    def join(self):
+        for stage in self._stages:
+            stage.join()

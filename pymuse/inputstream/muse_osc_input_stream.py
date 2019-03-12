@@ -9,6 +9,8 @@ from pymuse.inputstream.muse_constants import (
     MUSE_OSC_PATH,
 )
 
+from time import time
+
 
 class MuseOSCInputStream():
 
@@ -18,6 +20,7 @@ class MuseOSCInputStream():
             (ip, port), self._create_dispatchers(signal_name_list))
 
     def _callback(self, osc_path, opt_params, *signal_data):
+        print(time())
         signal_name = opt_params[0]
         self._signals[signal_name].push(signal_data)
 
