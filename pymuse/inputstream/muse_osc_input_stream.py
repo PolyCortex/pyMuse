@@ -1,4 +1,5 @@
 from threading import Thread
+from queue import Full
 
 from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
@@ -20,9 +21,11 @@ class MuseOSCInputStream():
             (ip, port), self._create_dispatchers(signal_name_list))
 
     def _callback(self, osc_path, opt_params, *signal_data):
-        print(time())
-        signal_name = opt_params[0]
-        self._signals[signal_name].push(signal_data)
+        try:
+            signal_name = opt_params[0]
+            self._signals[signal_name].push(signal_data)
+        except Full as err:
+            print("MuseOSCInputStream: queue is full")
 
     def _create_dispatchers(self, signal_name_list: list) -> Dispatcher:
         disp = Dispatcher()

@@ -17,4 +17,4 @@ class AStage(PipelineStage):
             data = self._queue_in.get()
             self.output_queue.put(data)
         """
-        #print("Exec time of MuseCSVOutputStream "+ str(time.time() - time_val))
+        print("Exec time of AStage "+ str(time.time() - time_val))

@@ -15,22 +15,24 @@ pipeline.start()
 
 museOSCInputStream.start()
 
-pipeline.join()
+lastStage.join()
 
 
 import matplotlib.pyplot as plt
 import queue
+import sys, os
 datas_TP9 = []
 time = []
 
-try:
-    while True:
-        datas_TP9.append(lastStage.output_queue.get_nowait().values[0])
-        time.append(lastStage.output_queue.get_nowait().time)
-except queue.Empty:
-    pass
+for _ in range(int(3* 256)):
+    data = lastStage.output_queue.get()
+    datas_TP9.append(data.values[2])
+    time.append(data.time)
 
-plt.plot(time, datas_TP9,'ks-',label='Actual')
+print("time:" + str(len(time)))
+print("tp9:" + str(len(datas_TP9)))
+
+plt.plot(time, datas_TP9)
 plt.xlabel('time(s)')
 plt.ylabel('amplitude uV')
 plt.title('TP9')
