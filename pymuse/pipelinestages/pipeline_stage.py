@@ -36,7 +36,7 @@ class PipelineStage(ABC, Thread):
         """ Override this method if you need to safely shutdown the module."""
         pass
 
-    def is_shutted_down(self):
+    def is_shutted_down(self) -> bool:
         return self._shutdown_event.is_set()
 
     def run(self):

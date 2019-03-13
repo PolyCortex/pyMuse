@@ -12,6 +12,7 @@ class Pipeline():
 
     def __init__(self, input_signal: Signal, *stages):
         """ E.g.: Pipeline(Signal(), PipelineStage(), PipelineFork([PipelineStage(), PipelineStage()], [PipelineStage()] )) """
+        self._output_queues = []
         self._input_signal = input_signal
         self._stages: list = list(stages)
         self._link_stages(self._stages)
@@ -28,8 +29,10 @@ class Pipeline():
                 self._link_pipeline_fork(stages, i)
             else:
                 stages[i - 1].add_queue_out(stages[i].queue_in)
-        if type(stages[-1]) == PipelineStage:
-            stages[-1].add_queue_out(Queue(PIPELINE_QUEUE_SIZE))
+        if issubclass(type(stages[-1]), PipelineStage):
+            output_queue = Queue(PIPELINE_QUEUE_SIZE)
+            stages[-1].add_queue_out(output_queue)
+            self._output_queues.append(output_queue)
 
     def _start(self, stages: list):
         for stage in stages:
@@ -38,6 +41,14 @@ class Pipeline():
                     self._start(forked_branch)
             else:
                 stage.start()
+    
+    def get_output_queue(self, queue_index = 0) -> Queue:
+        """Return a ref to the queue given by queue_index"""
+        return self._output_queues[queue_index]
+
+    def read_output_queue(self, queue_index = 0):
+        """Wait to read a data in a queue given by queue_index"""
+        return self._output_queues[queue_index].get()
 
     def start(self):
         """Start all pipelines stages."""
