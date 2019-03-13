@@ -40,6 +40,7 @@ class Pipeline():
                 stage.start()
 
     def start(self):
+        """Start all pipelines stages."""
         self._start(self._stages)
 
     def _shutdown(self, stages: list):

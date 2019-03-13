@@ -25,7 +25,7 @@ class MuseOSCInputStream():
             signal_name = opt_params[0]
             self._signals[signal_name].push(signal_data)
         except Full as err:
-            print("MuseOSCInputStream: queue is full")
+            print("MuseOSCInputStream: queue is full" + err)
 
     def _create_dispatchers(self, signal_name_list: list) -> Dispatcher:
         disp = Dispatcher()

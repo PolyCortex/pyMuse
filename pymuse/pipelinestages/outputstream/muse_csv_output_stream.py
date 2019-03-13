@@ -8,7 +8,7 @@ class MuseCSVOutputStream(PipelineStage):
     def __init__(self):
         super().__init__()
 
-    def run(self): # Pour l'instant, ce sera une étape bidon du pipeline qui ne fait que mettre les résultats sur la sortie standard.
+    def execute(self): # Pour l'instant, ce sera une étape bidon du pipeline qui ne fait que mettre les résultats sur la sortie standard.
         print('MuseCSVOutputStream Forked!')
 
         time_val = time.time()
