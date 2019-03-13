@@ -42,5 +42,5 @@ class MuseOSCInputStream():
     def start(self):
         Thread(target=self._server.serve_forever).start()
 
-    def close(self):
+    def shutdown(self):
         self._server.shutdown()

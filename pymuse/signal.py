@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 from queue import PriorityQueue
-from threading import Lock
 
 
 @dataclass
