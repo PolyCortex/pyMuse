@@ -14,26 +14,26 @@ class MuseCSVOutputStream(PipelineStage):
         self._file_name = file_name
         self._column_prefix = column_prefix
 
-    def execute(self): # Pour l'instant, ce sera une étape bidon du pipeline qui ne fait que mettre les résultats sur la sortie standard.
-        print('MuseCSVOutputStream Forked!')
-        timeinit = time.time()
+    def _initialization_hook(self):
         try:
-            with open(self._file_name, 'w', newline='') as csv_file:
-                csv_writer = writer(csv_file)
-                print("before")
-                data = self._queue_in.get()
-                print("data, values :", data.values)
-                self._setHeaderFile(csv_writer, len(data.values))
-                for i in range(256*3 - 1):
-                    csv_writer.writerow([data.time] + [electrode for electrode in data.values])
-                    data = self._queue_in.get()
+            self._csv_file = open(self._file_name, 'w', newline='');
         except PermissionError as err:
             print("MuseCSVOutputStream: Cannot open file: %s"%(err))
-        
-        print("finished, exec time: ", time.time() - timeinit)
+            raise err
 
+        self._csv_writer = writer(self._csv_file)
+        self._data = self._queue_in.get()
+        print("data, values :", self._data.values)
+        self._setHeaderFile(len(self._data.values))
 
-    def _setHeaderFile(self, csv_writer, nb_samples):
+    def execute(self):
+        self._csv_writer.writerow([self._data.time] + [value for value in self._data.values])
+        self._data = self._queue_in.get()
+    
+    def _shutdown_hook(self):
+        self._csv_file.close()
+
+    def _setHeaderFile(self, nb_samples):
         value_column_names = ["%s %i"%(self._column_prefix, x) for x in range(nb_samples)]
         column_names = [TIME_COLUMN_NAME] + value_column_names
-        csv_writer.writerow(column_names)
+        self._csv_writer.writerow(column_names)

@@ -40,9 +40,14 @@ class PipelineStage(ABC, Thread):
         return self._shutdown_event.is_set()
 
     def run(self):
+        self._initialization_hook()
         while not(self.is_shutted_down()):
             self.execute()
 
     def execute(self):
-        "This is the method executed in loop in the pipeline stage's thread. You must override this function to do a custom PipelineStage."
+        """This is the method executed in loop in the pipeline stage's thread. You must override this function to do a custom PipelineStage."""
+        pass
+    
+    def _initialization_hook(self):
+        """ Override this method if you need an initialization routine before thread execution. """
         pass
