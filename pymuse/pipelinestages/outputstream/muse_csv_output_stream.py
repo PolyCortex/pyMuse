@@ -26,7 +26,7 @@ class MuseCSVOutputStream(PipelineStage):
             raise err
 
         self._csv_writer = writer(self._csv_file)
-        self._buffer.append(self._queue_in.get())
+        self._buffer.append(self._pop_queue_in())
         self._setHeaderFile(len(self._buffer[0].values))
         print("MuseCSVOutputStream: Started writing to " + self._FILE_NAME)
 
@@ -34,7 +34,7 @@ class MuseCSVOutputStream(PipelineStage):
         if len(self._buffer) >= self._BUFFER_MAX:
             self._flush_buffer()
 
-        self._buffer.append(self._queue_in.get())
+        self._buffer.append(self._pop_queue_in())
     
     def _flush_buffer(self):
         rows = [[data.time] + [value for value in data.values] for data in self._buffer]

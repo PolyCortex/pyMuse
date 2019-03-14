@@ -1,4 +1,4 @@
-import os
+import sys
 from signal import signal, SIGINT, SIGTERM
 
 registered_modules = []
@@ -7,7 +7,7 @@ def _signal_handler(sig, frame):
     global registered_modules
     for module in registered_modules:
         module.shutdown()
-    os._exit(0)
+    sys.exit(0)
 
 def configure_shutdown(*modules):
     """Shutdown every given thread before leaving the main thread when SIGINT or SIGTERM is received"""

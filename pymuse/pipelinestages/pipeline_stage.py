@@ -1,10 +1,11 @@
 from abc import ABC
-from queue import Queue
+from queue import Queue, Empty
 from threading import Thread, Event
 from copy import deepcopy
 
 from pymuse.constants import PIPELINE_QUEUE_SIZE
 
+TIMEOUT=0.1
 
 class PipelineStage(ABC, Thread):
 
@@ -25,6 +26,15 @@ class PipelineStage(ABC, Thread):
         for queue_out in self._queues_out:
             queue_out.put(deepcopy(data))
 
+    def _pop_queue_in(self):
+        """"Safely get the last element in the queue"""
+        while not(self.is_shutted_down()):
+            try:
+                return self._queue_in.get(True, TIMEOUT)
+            except Empty:
+                pass
+        raise SystemExit()
+
     # Override this method to correctly shutdown your pipeline stage
     def shutdown(self):
         """Kill the current module."""
@@ -39,10 +49,12 @@ class PipelineStage(ABC, Thread):
         return self._shutdown_event.is_set()
 
     def run(self):
-        self._initialization_hook()
-        while not(self.is_shutted_down()):
-            # Regarder si recu quelque chose de la file d'entree
-            self.execute()
+        try:
+            self._initialization_hook()
+            while not(self.is_shutted_down()):
+                self.execute()
+        except SystemExit:
+            pass
 
     def execute(self):
         """This is the method executed in loop in the pipeline stage's thread. You must override this function to do a custom PipelineStage."""
