@@ -1,0 +1,19 @@
+from threading import Event
+from queue import Queue, Empty
+
+TIMEOUT=0.1     
+
+class StoppableQueue(Queue):
+    def __init__(self, maxsize=0, shutdown_event: Event=None):
+        super(StoppableQueue, self).__init__(maxsize)
+        self.shutdown_event = shutdown_event
+
+    def get(self, block=True, timeout=TIMEOUT):
+        if block or self.shutdown_event is not None:
+            while not(self.shutdown_event.is_set()):
+                try:
+                    return super(StoppableQueue, self).get(True, timeout)
+                except Empty:
+                    pass
+            raise SystemExit()
+        return super(StoppableQueue, self).get(block, timeout)

@@ -1,26 +1,23 @@
 from dataclasses import dataclass
 from datetime import datetime
-from queue import PriorityQueue
 
+from pymuse.utils.stoppablequeue import StoppableQueue
 
 @dataclass
 class SignalData():
     time: float
     values: list
 
-    def __lt__(self, other):
-        return self.time < other.time
-
 
 class Signal():
 
     def __init__(self, length: int, acquisition_frequency: float):
-        self._signal_queue: PriorityQueue = PriorityQueue(length)
+        self._signal_queue: StoppableQueue = StoppableQueue(length)
         self._signal_period: float = (1 / acquisition_frequency)
         self._data_counter: int = 0
 
     @property
-    def signal_queue(self) -> PriorityQueue:
+    def signal_queue(self) -> StoppableQueue:
         return self._signal_queue
 
     def push(self, data_list: list):
