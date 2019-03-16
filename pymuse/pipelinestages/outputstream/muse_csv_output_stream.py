@@ -11,12 +11,25 @@ DEFAULT_COLUMN_PREFIX = "electrode"
 TIME_COLUMN_NAME = "time"
 
 class MuseCSVOutputStream(PipelineStage):
+    """
+    Pipeline stage that creates and writes to a csv file  all incoming data from the precedent stage.
+
+    It should be used as the last stage in a pipeline.  Otherwise, you can fork the pipeline into a
+    MuseCSVOutputStream to extract data from an intermediate stage.
+    """
+
     def __init__(self, file_name=DEFAULT_FILE_NAME, column_prefix=DEFAULT_COLUMN_PREFIX, buffer_max=MUSE_EEG_ACQUISITION_FREQUENCY):
         super().__init__()
         self._FILE_NAME = file_name
         self._COLUMN_PREFIX = column_prefix
         self._BUFFER_MAX = buffer_max
         self._buffer = []
+    
+    def execute(self):
+        if len(self._buffer) >= self._BUFFER_MAX:
+            self._flush_buffer()
+
+        self._buffer.append(self._queue_in.get())
 
     def _initialization_hook(self):
         try:
@@ -29,12 +42,6 @@ class MuseCSVOutputStream(PipelineStage):
         self._buffer.append(self._queue_in.get())
         self._setHeaderFile(len(self._buffer[0].values))
         print("MuseCSVOutputStream: Started writing to " + self._FILE_NAME)
-
-    def execute(self):
-        if len(self._buffer) >= self._BUFFER_MAX:
-            self._flush_buffer()
-
-        self._buffer.append(self._queue_in.get())
     
     def _flush_buffer(self):
         rows = [[data.time] + [value for value in data.values] for data in self._buffer]
