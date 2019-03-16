@@ -50,7 +50,7 @@ class PipelineStage(ABC, Thread):
         try:
             self._initialization_hook()
             while not(self.is_shutted_down()):
-                self.execute()
+                self._execute()
         except SystemExit:
             pass
 
@@ -58,7 +58,7 @@ class PipelineStage(ABC, Thread):
         if self._queue_in.shutdown_event is None:
             self._queue_in.shutdown_event = self._shutdown_event
 
-    def execute(self):
+    def _execute(self):
         """This is the method executed in loop in the pipeline stage's thread. You must override this function to do a custom PipelineStage."""
         pass
     

@@ -24,7 +24,7 @@ class MuseCSVOutputStream(PipelineStage):
         self._BUFFER_MAX = buffer_max
         self._buffer = []
     
-    def execute(self):
+    def _execute(self):
         if len(self._buffer) >= self._BUFFER_MAX:
             self._flush_buffer()
 
