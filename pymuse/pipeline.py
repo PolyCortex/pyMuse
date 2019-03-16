@@ -6,12 +6,18 @@ from pymuse.constants import PIPELINE_QUEUE_SIZE
 
 
 class PipelineFork():
+    """
+    This class is used to fork a Pipeline. Ex.: PipelineFork([stage1, stage2], [stage3]) fork the pipeline
+    in two paths and has two outputs (stage2 and stage3). It is used during the construction of Pipeline.
+    """
     def __init__(self, *branches):
         self.forked_branches: list = list(branches)
 
 
 class Pipeline():
-
+    """
+    This class create a multithreaded pipeline. It automatically links together every contiguous stages.
+    """
     def __init__(self, input_signal: Signal, *stages):
         """ E.g.: Pipeline(Signal(), PipelineStage(), PipelineFork([PipelineStage(), PipelineStage()], [PipelineStage()] )) """
         self._output_queues = []

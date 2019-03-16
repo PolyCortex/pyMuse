@@ -7,7 +7,10 @@ from pymuse.constants import PIPELINE_QUEUE_SIZE
 
 
 class PipelineStage(ABC, Thread):
-
+    """
+    Abstract class that implements a pipeline stage. You must override the execute method and should
+    implements the initialization_hook and shutdown_hook method.
+    """
     def __init__(self):
         super().__init__()
         self._queue_in: Queue = Queue(PIPELINE_QUEUE_SIZE)

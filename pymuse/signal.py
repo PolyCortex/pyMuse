@@ -12,7 +12,7 @@ class SignalData():
 
 
 class Signal():
-
+    """Represents the accumulated signal that is store in a queue. It tag every sample with a time"""
     def __init__(self, length: int, acquisition_frequency: float):
         self._signal_queue: PriorityQueue = PriorityQueue(length)
         self._signal_period: float = (1 / acquisition_frequency)
