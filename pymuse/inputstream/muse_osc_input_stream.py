@@ -1,16 +1,14 @@
 from threading import Thread
 from queue import Full
-
 from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
+
 from pymuse.signal import Signal, SignalData
 from pymuse.inputstream.constants import DEFAULT_UDP_PORT, LOCALHOST, SIGNAL_QUEUE_LENGTH
 from pymuse.inputstream.muse_constants import (
     MUSE_ACQUISITION_FREQUENCIES,
     MUSE_OSC_PATH,
 )
-
-from time import time
 
 
 class MuseOSCInputStream():
