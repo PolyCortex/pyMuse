@@ -1,6 +1,5 @@
 from csv import writer
 from datetime import date
-import time
 
 from pymuse.inputstream.muse_constants import MUSE_EEG_ACQUISITION_FREQUENCY
 from pymuse.pipelinestages.pipeline_stage import PipelineStage
