@@ -9,7 +9,10 @@ from pymuse.constants import PIPELINE_QUEUE_SIZE
 TIMEOUT=0.1
 
 class PipelineStage(ABC, Thread):
-
+    """
+    Abstract class that implements a pipeline stage. You must override the execute method and should
+    implements the initialization_hook and shutdown_hook method.
+    """
     def __init__(self):
         super().__init__()
         self._shutdown_event = Event()
@@ -39,7 +42,7 @@ class PipelineStage(ABC, Thread):
         """ Override this method if you need to safely shutdown the module."""
         pass
 
-    def is_shutted_down(self):
+    def is_shutted_down(self) -> bool:
         return self._shutdown_event.is_set()
 
     def run(self):

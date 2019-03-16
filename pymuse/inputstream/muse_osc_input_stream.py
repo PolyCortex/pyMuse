@@ -1,8 +1,8 @@
 from threading import Thread
 from queue import Full
-
 from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
+
 from pymuse.signal import Signal, SignalData
 from pymuse.inputstream.constants import DEFAULT_UDP_PORT, LOCALHOST, SIGNAL_QUEUE_LENGTH
 from pymuse.inputstream.muse_constants import (
@@ -10,10 +10,12 @@ from pymuse.inputstream.muse_constants import (
     MUSE_OSC_PATH,
 )
 
-from time import time
-
 
 class MuseOSCInputStream():
+    """ 
+    Creates an OSC/UDP server that runs on a new thread. It receives and enqueues every data that you
+    specify in the constructor (see muse_constants.py).
+    """
 
     def __init__(self, signal_name_list: list = ['eeg'], ip: str = LOCALHOST, port: int = DEFAULT_UDP_PORT):
         self._signals: dict = dict()
@@ -24,8 +26,8 @@ class MuseOSCInputStream():
         try:
             signal_name = opt_params[0]
             self._signals[signal_name].push(signal_data)
-        except Full as err:
-            print("MuseOSCInputStream: queue is full" + err)
+        except Full:
+            print("MuseOSCInputStream: queue is full")
 
     def _create_dispatchers(self, signal_name_list: list) -> Dispatcher:
         disp = Dispatcher()

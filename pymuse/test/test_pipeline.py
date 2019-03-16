@@ -1,8 +1,9 @@
+import unittest
+from queue import Queue
+
 from pymuse.pipelinestages.pipeline_stage import PipelineStage
 from pymuse.signal import Signal, SignalData
 from pymuse.pipeline import Pipeline, PipelineFork
-import unittest
-from queue import Queue
 
 N = 20
 DATA_RATE = 200 # per sec

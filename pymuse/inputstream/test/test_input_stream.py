@@ -38,7 +38,7 @@ class InputStreamTest(unittest.TestCase):
         self.read_messages(EEG_MESSAGES_LIST, SOUGHT_DATA_LIST[0])
         self.read_messages(TOUCHING_FOREHEAD_MESSAGES_LIST,
                            SOUGHT_DATA_LIST[1])
-        self.muse_input_stream.close()
+        self.muse_input_stream.shutdown()
 
 
 if __name__ == '__main__':
