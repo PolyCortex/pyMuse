@@ -1,10 +1,12 @@
 from abc import ABC
-from queue import Queue
+from queue import Empty
 from threading import Thread, Event
 from copy import deepcopy
 
+from pymuse.utils.stoppablequeue import StoppableQueue
 from pymuse.constants import PIPELINE_QUEUE_SIZE
 
+TIMEOUT=0.1
 
 class PipelineStage(ABC, Thread):
     """
@@ -13,15 +15,17 @@ class PipelineStage(ABC, Thread):
     """
     def __init__(self):
         super().__init__()
-        self._queue_in: Queue = Queue(PIPELINE_QUEUE_SIZE)
-        self._queues_out: list = []
         self._shutdown_event = Event()
+        self._queue_in: StoppableQueue = StoppableQueue(PIPELINE_QUEUE_SIZE, self._shutdown_event)
+        self._queues_out: list = []
 
     @property
-    def queue_in(self) -> Queue:
+    def queue_in(self) -> StoppableQueue:
         return self._queue_in
 
-    def add_queue_out(self, queue: Queue):
+    def add_queue_out(self, queue=None):
+        if queue is None:
+            queue = StoppableQueue(self._shutdown_event, PIPELINE_QUEUE_SIZE)
         self._queues_out.append(queue)
 
     def _write_queues_out(self, data):
@@ -42,9 +46,22 @@ class PipelineStage(ABC, Thread):
         return self._shutdown_event.is_set()
 
     def run(self):
-        while not(self.is_shutted_down()):
-            self.execute()
+        self._link_shutdown_event_with_queue_in()
+        try:
+            self._initialization_hook()
+            while not(self.is_shutted_down()):
+                self._execute()
+        except SystemExit:
+            pass
 
-    def execute(self):
-        "This is the method executed in loop in the pipeline stage's thread. You must override this function to do a custom PipelineStage."
+    def _link_shutdown_event_with_queue_in(self):
+        if self._queue_in.shutdown_event is None:
+            self._queue_in.shutdown_event = self._shutdown_event
+
+    def _execute(self):
+        """This is the method executed in loop in the pipeline stage's thread. You must override this function to do a custom PipelineStage."""
+        pass
+    
+    def _initialization_hook(self):
+        """ Override this method if you need an initialization routine before thread execution. """
         pass
