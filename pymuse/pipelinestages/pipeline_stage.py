@@ -16,7 +16,7 @@ class PipelineStage(ABC, Thread):
     def __init__(self):
         super().__init__()
         self._shutdown_event = Event()
-        self._queue_in: StoppableQueue = StoppableQueue(self._shutdown_event, PIPELINE_QUEUE_SIZE)
+        self._queue_in: StoppableQueue = StoppableQueue(PIPELINE_QUEUE_SIZE, self._shutdown_event)
         self._queues_out: list = []
 
     @property

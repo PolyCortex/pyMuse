@@ -13,28 +13,25 @@ EXPECTED_DATA_LAST_STAGE_2 = [SignalData(0, (3,4,5,6))] * N
 
 # Mock stage of a pipeline that just increment every values by 1
 class MockStage(PipelineStage):
-    def __init__(self, isLastStage = False):
-        self.isLastStage = isLastStage
-        self.lastStageOutput = Queue(N)
+    def __init__(self):
         super().__init__()
+        self.cnt = 0
 
-    def run(self):
-        for _ in range(N):
+    def _execute(self):
+        if self.cnt < 20:
             data = self._queue_in.get()
             data.values = tuple([el + 1 for el in data.values])
             data.time = 0 # We ensure time=0 to simplify the test
             self._write_queues_out(data)
-            if self.isLastStage:
-                self.lastStageOutput.put(data)
+            self.cnt += 1
+        else:
+            self.shutdown()
 
 class PipelineTest(unittest.TestCase):
-    def check_queue_out_result(self, stage, expected_queue_out):
-        self.assertEqual(list(stage._queues_out[0].queue), expected_queue_out)
-
     def test_read(self):
         signal = Signal(N, DATA_RATE)
-        lastStage1 = MockStage(True)
-        lastStage2 = MockStage(True)
+        lastStage1 = MockStage()
+        lastStage2 = MockStage()
 
         pipeline = Pipeline(signal, MockStage(), PipelineFork([MockStage(), lastStage1], [lastStage2]))
         pipeline.start()
@@ -44,9 +41,8 @@ class PipelineTest(unittest.TestCase):
 
         lastStage1.join()
         lastStage2.join()
-
-        self.assertEqual(list(lastStage1.lastStageOutput.queue), EXPECTED_DATA_LAST_STAGE_1)
-        self.assertEqual(list(lastStage2.lastStageOutput.queue), EXPECTED_DATA_LAST_STAGE_2)
+        self.assertEqual(list(pipeline.get_output_queue(0).queue), EXPECTED_DATA_LAST_STAGE_1)
+        self.assertEqual(list(pipeline.get_output_queue(1).queue), EXPECTED_DATA_LAST_STAGE_2)
 
 if __name__ == '__main__':
     unittest.main()
