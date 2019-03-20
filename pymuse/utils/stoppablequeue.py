@@ -9,7 +9,10 @@ class StoppableQueue(Queue):
         self.shutdown_event = shutdown_event
 
     def get(self, block=True, timeout=TIMEOUT):
-        if block or self.shutdown_event is not None:
+        if self.shutdown_event is None:
+            raise AttributeError('StoppableQueueException: Shutdown Event is not defined')
+
+        if block:
             while not(self.shutdown_event.is_set()):
                 try:
                     return super(StoppableQueue, self).get(True, timeout)

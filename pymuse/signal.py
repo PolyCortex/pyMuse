@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from threading import Event
 
 from pymuse.utils.stoppablequeue import StoppableQueue
 
@@ -11,7 +12,8 @@ class SignalData():
 class Signal():
     """Represents the accumulated signal that is store in a queue. It tag every sample with a time"""
     def __init__(self, length: int, acquisition_frequency: float):
-        self._signal_queue: StoppableQueue = StoppableQueue(length)
+        self._shutdown_event = Event()
+        self._signal_queue: StoppableQueue = StoppableQueue(length, self._shutdown_event)
         self._signal_period: float = (1 / acquisition_frequency)
         self._data_counter: int = 0
 
@@ -27,3 +29,6 @@ class Signal():
 
     def pop(self) -> SignalData:
         return self._signal_queue.get(True)
+
+    def shutdown(self):
+        self._shutdown_event.set()

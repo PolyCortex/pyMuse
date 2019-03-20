@@ -48,4 +48,6 @@ class MuseOSCInputStream():
         Thread(target=self._server.serve_forever).start()
 
     def shutdown(self):
+        for name, signal in self._signals.items():
+            signal.shutdown()
         self._server.shutdown()
