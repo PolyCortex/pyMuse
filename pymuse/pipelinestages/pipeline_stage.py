@@ -23,9 +23,13 @@ class PipelineStage(ABC, Thread):
     def queue_in(self) -> StoppableQueue:
         return self._queue_in
 
+    @property
+    def shutdown_event(self):
+        return self._shutdown_event
+
     def add_queue_out(self, queue=None):
         if queue is None:
-            queue = StoppableQueue(self._shutdown_event, PIPELINE_QUEUE_SIZE)
+            queue = StoppableQueue(PIPELINE_QUEUE_SIZE, self._shutdown_event)
         self._queues_out.append(queue)
 
     def _write_queues_out(self, data):

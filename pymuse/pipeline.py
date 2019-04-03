@@ -56,8 +56,8 @@ class Pipeline():
                 self._link_pipeline_fork(stages, i)
             else:
                 stages[i - 1].add_queue_out(stages[i].queue_in)
-        if issubclass(type(stages[-1]), PipelineStage):
-            output_queue = StoppableQueue(PIPELINE_QUEUE_SIZE)
+        if issubclass(type(stages[-1]), PipelineStage): #Leaf of pipeline
+            output_queue = StoppableQueue(PIPELINE_QUEUE_SIZE, stages[-1].shutdown_event)
             stages[-1].add_queue_out(output_queue)
             self._output_queues.append(output_queue)
 

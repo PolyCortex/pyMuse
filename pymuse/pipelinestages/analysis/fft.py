@@ -1,5 +1,5 @@
 import numpy as np
-import scipy
+import scipy.fftpack
 from enum import Enum
 from pymuse.pipelinestages.pipeline_stage import PipelineStage
 
@@ -29,17 +29,24 @@ class FFT(PipelineStage):
 
     def _execute(self):
         self._fill_window()
+        ###################
+        import matplotlib.pyplot as plt
+        plt.plot(self._buffer_window[0],'k')
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Amplitude')
+        plt.title('Frequency domain')
+        plt.show()
+        ##################
         if (self._detrending_method is not(None)):
             self._detrend()
-
-        # Overlapping with Hamming Window and Square window and Welch's method
-
-        self._write_queues_out(self._transform_to_freq())
+        # TODO: Overlapping with Hamming Window and Square window and Welch's method
+        freq_signals = self._transform_window_to_freq()
+        self._write_queues_out(freq_signals)
 
     def _fill_window(self):
         data = self._queue_in.get()
         self._buffer_window = np.empty(
-            (self._window_size, len(data[1])))  # Allocate a buffer window
+            (len(data.values), self._window_size))  # Allocate a buffer window
         self._add_data_to_buffer_window(0, data)
         # From 1 since we already consumed a data
         for i in range(1, len(self._buffer_window)):
@@ -47,19 +54,23 @@ class FFT(PipelineStage):
             self._add_data_to_buffer_window(i, data)
 
     def _add_data_to_buffer_window(self, index, data):
-        for channelIndex in len(data[1]):
-            self._buffer_window[index][channelIndex] = data[1][channelIndex]
+        for channelIndex in range(len(data.values)):
+            self._buffer_window[index][channelIndex] = data.values[channelIndex]
 
     def _detrend(self):
         for i in len(self._buffer_window):
             self._buffer_window[i] = scipy.signal.detrend(
                 self._buffer_window, type=self._detrending_method)
 
-    def _transform_to_freq(self):
-        ffts = []
+    def _transform_window_to_freq(self):
+        freq_signals = []
         for buffer_window in self._buffer_window:
-            ffts.append(self._fft(buffer_window))
-        return ffts
+            freq_signal = self._fft(buffer_window)
+            freq_signals.append(self._remove_imaginary_part(freq_signal))
+        return freq_signals
+
+    def _remove_imaginary_part(self, freq_signal):
+        return freq_signal[0:(int)(np.floor(len(freq_signal)/2) + 1)]
 
     def _fft(self, window):
         if (self._scaling_type == ScalingType.AMPLITUDE):
