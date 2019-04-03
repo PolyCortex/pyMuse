@@ -34,7 +34,7 @@ class PipelineStage(ABC, Thread):
 
     # Override this method to correctly shutdown your pipeline stage
     def shutdown(self):
-        """Kill the current module."""
+        """Kill the current module and execute the shutdown hook."""
         self._shutdown_hook()
         self._shutdown_event.set()
 

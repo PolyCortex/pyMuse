@@ -27,7 +27,6 @@ class MuseCSVOutputStream(PipelineStage):
     def _execute(self):
         if len(self._buffer) >= self._BUFFER_MAX:
             self._flush_buffer()
-
         self._buffer.append(self._queue_in.get())
 
     def _initialization_hook(self):
