@@ -27,8 +27,8 @@ class Signal():
         self._signal_queue.put(signal_data, True, self._signal_period)
         self._data_counter += 1
 
-    def pop(self) -> SignalData:
-        return self._signal_queue.get(True)
+    def pop(self, timeout=None) -> SignalData:
+        return self._signal_queue.get(True, timeout)
 
     def shutdown(self):
         self._shutdown_event.set()

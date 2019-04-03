@@ -41,8 +41,8 @@ class MuseOSCInputStream():
     def get_signal(self, signal_name: str) -> Signal:
         return self._signals[signal_name]
 
-    def read(self, signal_name: str) -> SignalData:
-        return self._signals[signal_name].pop()
+    def read(self, signal_name: str, timeout=None) -> SignalData:
+        return self._signals[signal_name].pop(timeout)
 
     def start(self):
         Thread(target=self._server.serve_forever).start()

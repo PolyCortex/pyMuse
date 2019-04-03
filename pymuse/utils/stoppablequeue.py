@@ -8,15 +8,15 @@ class StoppableQueue(Queue):
         super(StoppableQueue, self).__init__(maxsize)
         self.shutdown_event = shutdown_event
 
-    def get(self, block=True, timeout=TIMEOUT):
+    def get(self, block=True, timeout=None):
         if self.shutdown_event is None:
             raise AttributeError('StoppableQueueException: Shutdown Event is not defined')
 
-        if block:
+        if block and timeout is None:
             while not(self.shutdown_event.is_set()):
                 try:
-                    return super(StoppableQueue, self).get(True, timeout)
+                    return super(StoppableQueue, self).get(True, TIMEOUT)
                 except Empty:
                     pass
-            raise SystemExit()
+            raise SystemExit()            
         return super(StoppableQueue, self).get(block, timeout)
