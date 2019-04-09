@@ -28,34 +28,34 @@ class FFT(PipelineStage):
             self._scaling_type = ScalingType.AMPLITUDE
 
     def _execute(self):
-        self._fill_window()
+        self._fill_buffer_window()
         ###################
         import matplotlib.pyplot as plt
         plt.plot(self._buffer_window[0],'k')
-        plt.xlabel('Frequency (Hz)')
+        plt.xlabel('Time (Hz)')
         plt.ylabel('Amplitude')
-        plt.title('Frequency domain')
+        plt.title('Signal in time')
         plt.show()
         ##################
+
         if (self._detrending_method is not(None)):
             self._detrend()
         # TODO: Overlapping with Hamming Window and Square window and Welch's method
         freq_signals = self._transform_window_to_freq()
         self._write_queues_out(freq_signals)
 
-    def _fill_window(self):
+    def _fill_buffer_window(self):
         data = self._queue_in.get()
         self._buffer_window = np.empty(
             (len(data.values), self._window_size))  # Allocate a buffer window
         self._add_data_to_buffer_window(0, data)
-        # From 1 since we already consumed a data
         for i in range(1, len(self._buffer_window)):
             data = self._queue_in.get()
             self._add_data_to_buffer_window(i, data)
 
     def _add_data_to_buffer_window(self, index, data):
         for channelIndex in range(len(data.values)):
-            self._buffer_window[index][channelIndex] = data.values[channelIndex]
+            self._buffer_window[channelIndex][index] = data.values[channelIndex]
 
     def _detrend(self):
         for i in len(self._buffer_window):
