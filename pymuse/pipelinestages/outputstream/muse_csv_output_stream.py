@@ -21,7 +21,7 @@ class MuseCSVOutputStream(PipelineStage):
 
     def __init__(self, relative_file_path=DEFAULT_RELATIVE_FILE_PATH, column_prefix=DEFAULT_COLUMN_PREFIX, buffer_max=MUSE_EEG_ACQUISITION_FREQUENCY):
         super().__init__()
-        self._FILE_PATH = Path(relative_file_path)
+        self._FILE_PATH = Path(relative_file_path).with_suffix('.csv')
         self._COLUMN_PREFIX = column_prefix
         self._BUFFER_MAX = buffer_max
         self._buffer = []
@@ -29,7 +29,6 @@ class MuseCSVOutputStream(PipelineStage):
     def _execute(self):
         if len(self._buffer) >= self._BUFFER_MAX:
             self._flush_buffer()
-
         self._buffer.append(self._queue_in.get())
 
     def _initialization_hook(self):
