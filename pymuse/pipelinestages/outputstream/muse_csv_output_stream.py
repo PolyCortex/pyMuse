@@ -42,7 +42,7 @@ class MuseCSVOutputStream(PipelineStage):
         self._csv_writer = writer(self._csv_file)
         self._buffer.append(self._queue_in.get())
         self._setHeaderFile(len(self._buffer[0].values))
-        print("MuseCSVOutputStream: Started writing to " + self._FILE_PATH)
+        print("MuseCSVOutputStream: Started writing to " + self._FILE_PATH.name)
 
     def _flush_buffer(self):
         rows = [[data.time] + [value for value in data.values]
