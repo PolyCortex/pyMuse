@@ -16,9 +16,9 @@ class PipelineFork():
 class Pipeline():
     """
     This class create a multithreaded pipeline. It automatically links together every contiguous stages.
+    E.g.: Pipeline(Signal(), PipelineStage(), PipelineFork([PipelineStage(), PipelineStage()], [PipelineStage()] ))
     """
     def __init__(self, input_signal: Signal, *stages):
-        """ E.g.: Pipeline(Signal(), PipelineStage(), PipelineFork([PipelineStage(), PipelineStage()], [PipelineStage()] )) """
         self._output_queues = []
         self._stages: list = list(stages)
         self._link_stages(self._stages)
