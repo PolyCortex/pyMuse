@@ -51,3 +51,4 @@ class MuseOSCInputStream():
         for _, signal in self._signals.items():
             signal.shutdown()
         self._server.shutdown()
+        self._server.server_close()
