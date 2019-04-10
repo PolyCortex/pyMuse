@@ -5,8 +5,12 @@ from pymuse.utils.stoppablequeue import StoppableQueue
 
 @dataclass
 class SignalData():
+    """
+    Dataclass for a signal data point. Event_marker attribute is optional
+    """
     time: float
     values: list
+    event_marker: list = None
 
 
 class Signal():

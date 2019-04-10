@@ -1,11 +1,11 @@
 from csv import writer
-from datetime import date
+from datetime import datetime
 
 from pymuse.inputstream.muse_constants import MUSE_EEG_ACQUISITION_FREQUENCY
 from pymuse.pipelinestages.pipeline_stage import PipelineStage
 from pymuse.signal import SignalData
 
-DEFAULT_FILE_NAME = "MuseData%s.csv"%date.today()
+DEFAULT_FILE_NAME = "MuseData%s.csv"%datetime.now()
 DEFAULT_COLUMN_PREFIX = "electrode"
 TIME_COLUMN_NAME = "time"
 
@@ -32,7 +32,7 @@ class MuseCSVOutputStream(PipelineStage):
 
     def _initialization_hook(self):
         try:
-            self._csv_file = open(self._FILE_NAME, 'w', newline='');
+            self._csv_file = open(self._FILE_NAME, 'w', newline='')
         except PermissionError as err:
             print("MuseCSVOutputStream: Cannot open file: %s"%(err))
             raise err
