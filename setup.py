@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='pyMuse',
-    version='0.1',
+    version='0.2',
     description='Python tools and apps associated with Muse headband',
     long_description=long_description,
     url='https://github.com/PolyCortex/pyMuse',
@@ -22,7 +22,6 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
@@ -30,12 +29,6 @@ setup(
     ],
 
     keywords='muse polycortex fft eeg openbci',
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    install_requires=['matplotlib', 'pyserial', 'pyosc>=0.3.6', 'numpy', 'scipy'],
-    
-    entry_points={
-        'console_scripts': [
-            'eeg_display=eeg_display:main',
-        ],
-    },
+    packages=find_packages(exclude=['contrib', 'docs', 'test']),
+    install_requires=['python-osc', 'dataclasses'],
 )
