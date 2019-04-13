@@ -1,16 +1,49 @@
+
 # pyMuse
 
-This repository contains tools for gathering and processing Muse signals using Python.
+This repository contains tools for gathering and processing Muse signals using Python. With pyMuse you can configure and run an EEG pipeline faster than light.
 
-## Installation & dependences
+## Features
+
+[](https://emojipedia.org/construction-sign/) 🚧 Pymuse is still a work in progress. But we aim to have a flexible and extensible architecture so you can use it to your own sauce.
+
+For now, pyMuse already contains a lot of features:
+
+- EEG acquisition methods like MuseOSCInputStream to get data from MuseDirect.
+- Pipeline creation is extensible and modulable to your own needs. If you need a need a custom stage for your pipeline, just inherit from PipelineStage. 
+- Pipeline can be forked to process multiple outputs from a same source signal.
+- Each PipelineStage has its own thread and are automatically linked together by thread-safe queues. They provides hooks for their initialization and their shutdown.
+
+Of course, many more will come in the following months. Stay tuned.
+
+## Example
+
+   ``` python
+   from pymuse.pipeline import Pipeline
+from pymuse.configureshutdown import configure_shutdown
+from pymuse.inputstream.muse_osc_input_stream import MuseOSCInputStream
+from pymuse.pipelinestages.outputstream.muse_csv_output_stream import MuseCSVOutputStream
+
+muse_osc_input_stream = MuseOSCInputStream(['eeg', 'beta_relative']) # Signal acquisition module
+pipeline = Pipeline( # Pipeline modules are automagically linked together
+muse_osc_input_stream.get_signal('eeg'),
+MuseCSVOutputStream("recorded_eeg.csv")
+)
+# Ensure resources are freed when application is shutted down
+configure_shutdown(muse_osc_input_stream, pipeline)
+pipeline.start()
+muse_osc_input_stream.start()
+   ```
+
+## Installation & dependencies
 
 You will need a few tools to get started with the Muse headset and pyMuse:
 
-*  [MuseDirect](http://developer.choosemuse.com/tools/windows-tools) (Windows) or [MuseIO](http://developer.choosemuse.com/tools/mac-tools) (MacOS) or [MuseIO](http://developer.choosemuse.com/tools/linux-tools)(Linux)
+*  [MuseDirect](https://www.microsoft.com/en-us/p/muse-direct/9p0mbp6nv07x?activetab=pivot:overviewtab) (Windows)
 
-*  [Python 2.7](https://www.python.org/downloads/release/python-2714/)
+*  [Python 3.7](https://www.python.org/downloads/release/python-373/)
 
-Do not hesitate to visit the [Muse Developer website](http://developer.choosemuse.com/) for additional information.
+Do not hesitate to visit the [Muse Developer website](http://developer.choosemuse.com/) for additional information and to access the docs.
 
 ### Installation of this package
 
@@ -25,81 +58,4 @@ The installer should install all requirements, including:
 * numpy
 * scipy
 * matplotlib
-*  [pyosc](https://github.com/ptone/pyosc/)
-
-## Getting started on Windows
-
-### Display your Muse data with eeg displayer
-
-1. Connect your Muse headset with your computer by bluetooth
-
-2. Start Muse Direct and set an OSC UDP output
-
-![Set OSC/UDP output on localhost:5001](https://lh3.googleusercontent.com/W52JORAt_rx-I_VBtzFf7ieRUFCQMIeXCrc2jSvjHaPJgtIg_cz5M0OIeth8pdh3oAcquDXr2Vs  "OSC.UDP Output")
-
-Ensure all output data and all output algorithm are selected.
-
-3. Start EEG display script (in a new terminal):
-
-```
-python eeg_display.py
-```
-
-### Save Muse data and stream offline
-
-See the [developer webpage](http://www.choosemuse.com/developer-kit/) for details.
-
-1. Connect your Muse headset with your computer by bluetooth
-
-2. Start Muse Direct and set a Save to File output:
-
-![You must create a save to file output](https://lh3.googleusercontent.com/Qy2mg7cmcef-sTSC9IqtNAdgBZsTUtfSpNErYwagc1kWdqHvd3IVe-paVRLkgADW7cGxs4TDSvU  "SaveToFile")
-
-3. Press the record button when you want to begin recording your brain waves. Stop recording when you are done.
-
-![Press Record](https://lh3.googleusercontent.com/Gd_jUquAZrnu_YVDi36yChywVhYmjC-4V0Xpy494xSXPQJFLooL-PEJhlMgIjRSjIgWEERSb1Eo  "Press Record")
-
-4. Run [MusePlayer](http://developer.choosemuse.com/tools/museplayer) to stream the data to a server.
-
-```
-muse-player -f MyExperiment.muse -s osc.udp://localhost:5001
-```
-
-Note that you can add your recorded data to the following [repository](https://github.com/PolyCortex/MuseData) to share it with the other members.
-
-5. Now you can display your recorded session using eeg displayer, or processing with your favorite software.
-
-## Getting started on MacOS/Linux
-
-### Display your Muse data with eeg displayer
-
-1. Connect your Muse headset with your computer by bluetooth
-
-2. Start Muse IO and set an OSC UDP output:
-
-> muse-io --device Muse-XXXX --osc osc.udp://localhost:5001
-
-3. Start the EEG display script (in a new terminal):
-
-> python eeg_display.py
-
-### Save Muse data and stream offline
-
-See the [developer webpage](http://developer.choosemuse.com/) for details.
-
-1. Connect your Muse headset with your computer by bluetooth
-
-2. Start Muse IO and set an OSC UDP output:
-
-> muse-io --device Muse-XXXX --osc osc.udp://localhost:5001
-
-3. Save that stream to a file with MuseLab
-
-4. Run [MusePlayer](http://developer.choosemuse.com/tools/museplayer) to stream the data to a server.
-```
-muse-player -f MyExperiment.muse -s osc.udp://localhost:5001
-```
-
-Note that you can add your recorded data to the following [repository](https://github.com/PolyCortex/MuseData) to share it with the other members.
-
-5. Now you can display your recorded session using eeg displayer, or processing with your favorite software.
+*  [python-osc > 1.7.0](https://github.com/attwad/python-osc/)
